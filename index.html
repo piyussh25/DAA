@@ -1,585 +1,1161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Huffman Code Visualizer</title>
-
-    <!-- 1. Load Premium Font (Inter) -->
+    <title>NP-Completeness Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Code+Pro:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 2. High-Design CSS Styling --- */
-
+        /* Define Dark Mode Variables for the visual theme */
         :root {
-            --bg: #111317;
-            --panel-bg: rgba(255, 255, 255, 0.05);
-            --panel-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #ffffff;
-            --text-secondary: #aaaaeb;
-            --accent: #007bff;
-            --accent-hover: #0056b3;
-            --shadow: rgba(0, 0, 0, 0.2);
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        /* Base Setup */
-        * {
-            box-sizing: border-box;
+            --bg-dark: #121A26; /* Deep background color */
+            --bg-card: #1C2738; /* Card/Content background */
+            --text-main: #E5E7EB; /* Light text */
+            --text-secondary: #9CA3AF; /* Gray text */
+            --border-color: #374151; /* Border color */
+            --primary-blue: #3B82F6; /* Active blue */
+            --primary-indigo: #4F46E5; /* Indigo accent */
+            --code-bg: #111827; /* Code block background */
         }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--bg);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 2rem;
-            min-height: 100vh;
-            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            transition: background-color 0.3s;
+        }
+        .font-mono-code {
+            font-family: 'Source Code Pro', monospace;
+        }
+
+        /* Step Indicator Styling */
+        .step-indicator-container {
+            position: relative;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            max-width: 400px;
+            margin: 0 auto;
         }
-
-        /* Layout */
-        main {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 2rem;
-            width: 100%;
-            max-width: 1400px;
-            height: 80vh;
-            max-height: 800px;
-        }
-
-        /* Glassmorphism Panel Style */
-        .panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 2rem;
-            box-shadow: 0 8px 32px var(--shadow);
-            overflow: hidden;
-        }
-
-        /* --- Controls Panel (Left) --- */
-        .controls-panel {
+        .step-item {
             display: flex;
             flex-direction: column;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: translateY(20px);
+            align-items: center;
+            z-index: 10;
         }
-
-        /* Title (for GSAP) */
-        .title {
-            font-weight: 900;
-            font-size: 2.5rem;
-            line-height: 1.1;
-            margin: 0 0 0.5rem;
-            color: var(--text-primary);
-        }
-        
-        .title-line {
-            display: block;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: translateY(100%);
-        }
-        
-        /* Wrapped for animation */
-        .title-wrap {
-            overflow: hidden; /* Clips the text for the reveal */
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            font-weight: 400;
-            color: var(--text-secondary);
-            margin: 0 0 2rem;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-        }
-
-        textarea {
-            font-family: var(--font-family);
-            font-size: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--panel-border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            padding: 0.75rem;
-            height: 120px;
-            resize: none;
-            margin-bottom: 1rem;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
-        }
-
-        button {
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            font-family: var(--font-family);
-            font-size: 1rem;
-            font-weight: 600;
-            background: var(--accent);
-            color: var(--text-primary);
-            border: none;
-            border-radius: 8px;
-            padding: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            /* GSAP: Set initial animation state */
+            font-weight: 700;
+            background-color: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        .step-item.active .step-circle {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+        .step-line {
+            position: absolute;
+            height: 2px;
+            background-color: var(--border-color);
+            top: 17px;
+            left: 50%;
+            right: 50%;
+            transform: translateX(-50%);
+            transition: all 0.3s;
+        }
+        .step-line-segment {
+            position: absolute;
+            height: 2px;
+            background-color: var(--primary-blue);
+            transition: background-color 0.3s, width 0.5s ease-out;
+            top: 17px;
+        }
+        
+        .code-display {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Source Code Pro', monospace;
+            overflow-x: auto;
+        }
+
+        /* Styling for the graph container */
+        #clique-graph-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            touch-action: none;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+        }
+
+        /* Global Fade Transition for sections */
+        .fade-out {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
         }
-
-        button:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px); /* Micro-interaction */
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-
-        button:active {
+        .fade-in {
+            opacity: 1;
             transform: translateY(0);
         }
         
-        /* Output Table */
-        .table-container {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-top: 1.5rem;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        #codes-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #codes-table th,
-        #codes-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--panel-border);
-        }
-        
-        #codes-table th {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-        
-        #codes-table td {
-            font-family: monospace;
-            font-size: 1rem;
-            color: var(--text-primary);
-        }
-        
-        #codes-table td:first-child {
-            font-weight: 600;
-        }
-
-        /* --- Visualization Panel (Right) --- */
-        .viz-panel {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            /* GSAP: Set initial animation state */
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        #tree-svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        #viz-placeholder {
-            position: absolute;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-align: center;
-            transition: opacity 0.3s ease;
-        }
-
-        /* --- D3.js Tree Styles (Dark Mode) --- */
-        .node circle {
-            stroke: var(--accent);
-            stroke-width: 3px;
-        }
-
-        .node--internal circle {
-            fill: var(--bg);
-        }
-
-        .node--leaf circle {
-            fill: #334;
-        }
-        
-        .node text {
-            font-size: 14px;
-            font-weight: 600;
-            fill: var(--text-primary);
-        }
-        
-        .node .char-label {
-            fill: var(--accent);
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .link {
-            fill: none;
-            stroke: var(--panel-border);
+        /* Graph Styles */
+        .graph-node-circle {
             stroke-width: 2px;
+            cursor: grab;
+            transition: stroke 0.3s, stroke-width 0.1s, fill 0.3s;
         }
-        
-        .link-label {
-            font-size: 12px;
-            font-weight: 700;
-            fill: var(--text-secondary);
+        .graph-node-label {
+            font-family: 'Source Code Pro', monospace;
+            font-weight: 500;
+            fill: white;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .graph-edge {
+            stroke-width: 2;
+            transition: opacity 0.3s, stroke 0.3s;
+        }
+        .graph-node-group {
+            opacity: 0;
+            transition: opacity 0.5s;
         }
 
+        /* Advanced Visualization Styles */
+        .clique-node-highlight {
+            stroke-width: 4px !important;
+            fill: #FBBF24 !important; /* Yellow-400 */
+        }
+        .clique-edge-highlight {
+            stroke: #FBBF24 !important; /* Yellow-400 */
+            stroke-width: 3px !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
+    
+    <div class="bg-gradient-to-br from-indigo-600 to-blue-500 py-16 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <header class="flex justify-between items-center mb-10">
+                <div class="flex items-center space-x-2 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.525.434.619.689 1.066-2.572z"></path></svg>
+                </div>
+                <button id="dark-mode-toggle" class="p-2 rounded-full text-white hover:bg-white/20 transition" aria-label="Toggle Dark Mode">
+                    <svg id="moon-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </header>
 
-    <main>
-        <!-- Left Panel: Controls -->
-        <div class="panel controls-panel">
-            <h1 class="title">
-                <span class="title-wrap"><span class="title-line">DAA PROJECT</span></span>
-                <span class="title-wrap"><span class="title-line">HUFFMAN CODING </span></span>
-            </h1>
-            <p class="subtitle">enter text.</p>
+            <h1 class="text-5xl font-extrabold text-white mb-3">NP-Completeness Visualizer</h1>
+            <p class="text-xl text-indigo-200 mb-12">
+                Explore the fascinating world of computational complexity through interactive visualizations.
+            </p>
 
-            <label for="text-input">Your Text</label>
-            <textarea id="text-input" placeholder="piyush"></textarea>
+            <div class="grid md:grid-cols-3 gap-6 text-left">
+                <div class="bg-white/10 p-6 rounded-xl border border-white/20 hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl text-yellow-300 mb-3">💡</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Learn SAT</h3>
+                    <p class="text-indigo-200 text-sm">Understand Boolean satisfiability problems and their significance in computer science.</p>
+                </div>
+                <div class="bg-white/10 p-6 rounded-xl border border-white/20 hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl text-green-300 mb-3">➗</div>
+                    <h3 class="text-xl font-bold text-white mb-2">See 3-CNF</h3>
+                    <p class="text-indigo-200 text-sm">Watch formulas transform into 3-conjunctive normal form, the first step of the reduction.</p>
+                </div>
+                <div class="bg-white/10 p-6 rounded-xl border border-white/20 hover:bg-white/20 transition duration-300">
+                    <div class="text-4xl text-red-300 mb-3">🕸</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Visualize Clique</h3>
+                    <p class="text-indigo-200 text-sm">Explore graph representations and the final clique problem reduction steps.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <div id="input-card" class="bg-gray-800 p-8 rounded-xl shadow-2xl mt-[-50px] relative z-20 transition duration-500 ease-in-out">
+            <h2 class="text-2xl font-bold text-white mb-4">Enter a Boolean Formula</h2>
+            <p class="text-md text-gray-400 mb-6">
+                Input a SAT formula and watch it transform through 3-CNF to a Clique problem.
+            </p>
             
-            <button id="visualize-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13.01V2.99C2 2.44 2.45 2 3 2h10.01c.54 0 .99.45.99.99V13.01c0 .54-.45.99-.99.99H3c-.55 0-.99-.45-.99-.99Z"/><path d="M11 21.99h7.01c.54 0 .99-.45.99-.99V10.99c0-.54-.45-.99-.99-.99H11c-.55 0-.99.45-.99.99V21c0 .54.45.99.99.99Z"/><path d="M7 14v-2"/><path d="M17 11v-2"/></svg>
-                <span>Visualize</span>
-            </button>
+            <div class="flex flex-col md:flex-row items-stretch md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-4">
+                <input type="text" id="formula-input" class="w-full p-4 font-mono-code text-xl border border-gray-600 bg-gray-900 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-white" 
+                    placeholder="e.g., (A OR B) AND (NOT A OR C)" value="(A OR B) AND (NOT A OR C)">
+                
+                <button id="visualize-btn" class="flex-shrink-0 bg-orange-500 text-white font-bold py-3 px-8 text-lg rounded-lg hover:bg-orange-600 transition duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    Visualize →
+                </button>
+            </div>
 
-            <div class="table-container">
-                <table id="codes-table">
-                    <thead>
-                        <tr>
-                            <th>Char</th>
-                            <th>Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Codes will be injected here -->
-                    </tbody>
-                </table>
+            <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 mb-6">
+                <p class="text-sm font-semibold text-indigo-400 mb-2">ⓘ Syntax Guide:</p>
+                <ul class="text-sm space-y-1 text-gray-300">
+                    <li>Use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">OR</code> for disjunction (can use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">|</code>).</li>
+                    <li>Use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">AND</code> for conjunction (can use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">&amp;</code>).</li>
+                    <li>Use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">NOT</code> for negation (can use <code class="font-mono-code bg-gray-800 px-2 py-0.5 rounded-md">~</code>).</li>
+                    <li>Variables are *case-sensitive* (A-Z, X1-Z9, etc.).</li>
+                </ul>
+            </div>
+            
+            <div class="mt-6">
+                <p class="text-sm font-semibold text-gray-300 mb-2">Try these examples:</p>
+                <div id="example-buttons" class="flex flex-wrap gap-3">
+                    <!-- REPLACED WITH THE THREE EXAMPLES FROM THE IMAGE -->
+                    
+                    <button data-formula="(A OR B) AND (NOT A OR C)" class="example-btn font-mono-code text-xs bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded-full hover:bg-indigo-800/50 transition">
+                        (A OR B) AND (NOT A OR C)
+                    </button>
+                    
+                    <button data-formula="(X OR Y OR Z) AND (NOT X OR W)" class="example-btn font-mono-code text-xs bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded-full hover:bg-indigo-800/50 transition">
+                        (X OR Y OR Z) AND (NOT X OR W)
+                    </button>
+                    
+                    <button data-formula="(P OR Q) AND (NOT P OR R) AND (NOT Q OR R)" class="example-btn font-mono-code text-xs bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded-full hover:bg-indigo-800/50 transition">
+                        (P OR Q) AND (NOT P OR R) AND (NOT Q OR R)
+                    </button>
+
+                </div>
             </div>
         </div>
 
-        <!-- Right Panel: Visualization -->
-        <div class="panel viz-panel">
-            <div id="viz-placeholder">
-                <p>Your visualization will appear here.</p>
+        <section id="reduction-steps-container" class="mt-12 hidden fade-out">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-extrabold text-white">Reduction Steps</h2>
+                <div class="flex space-x-2">
+                    <button id="play-animation-btn" class="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition">
+                        <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        Play Animation
+                    </button>
+                    <button id="next-step-btn" class="flex items-center bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-gray-600 transition">
+                        Next Step
+                        <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
             </div>
-            <svg id="tree-svg"></svg>
-        </div>
+
+            <div class="step-indicator-container mb-8">
+                <div id="step-line-fill" class="step-line-segment" style="width: 0%;"></div>
+                <div class="step-item active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="mt-2 text-sm">SAT</div>
+                </div>
+                <div class="step-line" style="width: 50%;"></div>
+                <div class="step-item" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="mt-2 text-sm">3-CNF</div>
+                </div>
+                <div class="step-line" style="width: 50%;"></div>
+                <div class="step-item" data-step="3">
+                    <div class="mt-2 text-sm">Clique</div>
+                    <div class="step-circle">3</div>
+                </div>
+            </div>
+
+            <div id="step-panels-container" class="space-y-8">
+                
+                <div id="panel-1" class="bg-gray-800 p-8 rounded-xl fade-in transition duration-500">
+                    <h3 class="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.24a2 2 0 010 2.828l-8 8a2 2 0 01-2.828 0l-4-4a2 2 0 010-2.828l4-4a2 2 0 012.828 0l4 4a2 2 0 002.828 0l4-4a2 2 0 012.828 0z"></path></svg>
+                        SAT Formula
+                    </h3>
+                    <p class="text-md text-gray-400 mb-4">Original SAT formula in Boolean form:</p>
+
+                    <div class="code-display text-2xl font-mono-code text-white mb-6 p-6 text-center">
+                        <span id="sat-output"></span>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-2">What is SAT?</h4>
+                        <p class="text-sm text-gray-400">
+                            The Boolean Satisfiability Problem (SAT) asks whether there exists an assignment of truth values to variables that makes the entire formula true. SAT was the first problem proven to be NP-complete, making it a cornerstone of computational complexity theory.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="panel-2" class="bg-gray-800 p-8 rounded-xl fade-out hidden transition duration-500">
+                    <h3 class="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        3-CNF Conversion
+                    </h3>
+                    <p id="3cnf-stats" class="text-md text-gray-400 mb-4">Converted to 3-CNF with exactly 3 literals per clause. Each clause is a disjunction (OR) of three literals.</p>
+
+                    <div id="3cnf-output" class="code-display text-lg font-mono-code text-white mb-6 p-6 space-y-3">
+                        </div>
+                    
+                    <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-2">What is 3-CNF?</h4>
+                        <p class="text-sm text-gray-400">
+                            3-Conjunctive Normal Form (3-CNF) is a standardized format where a formula is expressed as a conjunction (AND) of clauses, where each clause is a disjunction (OR) of *exactly three literals*. Any SAT formula can be converted to 3-CNF in polynomial time, proving 3-SAT is NP-complete.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="panel-3" class="bg-gray-800 p-8 rounded-xl fade-out hidden transition duration-500">
+                    <h3 class="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        CLIQUE Graph
+                    </h3>
+                    <p id="clique-stats" class="text-md text-gray-400 mb-4">Graph where nodes represent literals and edges connect compatible literals from different clauses. A clique of size k (number of clauses) indicates a satisfying assignment exists.</p>
+
+                    <div id="clique-graph-container" class="relative w-full h-[550px] rounded-xl overflow-hidden shadow-inner border-2 border-gray-700 mb-4">
+                        <svg id="clique-graph" class="absolute inset-0 w-full h-full"></svg>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-center bg-gray-900 p-4 rounded-lg border border-gray-700 mb-6">
+                        <p class="text-white font-semibold mb-2 md:mb-0">Find a Clique of size <span id="k-value" class="text-yellow-400 text-lg">k</span>:</p>
+                        <button id="find-clique-btn" class="flex items-center bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-gray-600">
+                            Highlight Satisfying Clique
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-2">Nodes</h4>
+                            <p class="text-sm text-gray-400">Each node represents a *literal* (e.g., A or ¬B) from a specific 3-CNF clause. Nodes are colored by their source clause.</p>
+                        </div>
+                        <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                            <h4 class="text-lg font-semibold text-white mb-2">Edges</h4>
+                            <p class="text-sm text-gray-400">An edge exists if two literals belong to *different clauses* AND are *not contradictory* (e.g., X and ¬X).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white mb-2">What is the Clique Problem?</h4>
+                        <p class="text-sm text-gray-400">
+                            The existence of a *Clique* (a complete subgraph) of size k (the number of 3-CNF clauses) proves the original SAT formula is satisfiable. This reduction shows that 3-SAT is polynomially reducible to CLIQUE, proving CLIQUE is also NP-complete.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
     </main>
 
-    <!-- 3. Load JS Libraries -->
-    <!-- D3.js (for Data Visualization) -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- GSAP (for High-End Animation) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-700 mt-12">
+        Built for NP-Completeness visualization practice.
+    </footer>
 
-    <!-- 4. Main Application Logic -->
-    <script>
-        
-        // --- 1. Huffman Algorithm Logic ---
-        
-        // Node class for building the tree
-        class HuffmanNode {
-            constructor(char, freq, left = null, right = null) {
-                this.char = char;
-                this.freq = freq;
-                this.left = left;
-                this.right = right;
-            }
-            isLeaf() {
-                return this.left === null && this.right === null;
-            }
+    <script type="module">
+        // =================================================================
+        // GRAPH RENDERING LOGIC (ADVANCED FORCE-DIRECTED LAYOUT)
+        // =================================================================
+
+        // --- Graph Constants ---
+        const NODE_SIZE = 40; 
+        const NODE_HALF_SIZE = NODE_SIZE / 2;
+        const PADDING = 20;
+        const REPULSION_FORCE = 8000;
+        const ATTRACTION_STRENGTH = 0.05;
+        const DAMPING_FACTOR = 0.6;
+        const MAX_VELOCITY = 10;
+        const MAX_ITERATIONS = 200; // Limit simulation time
+
+        // Tailwind CSS mapping for node styles (assuming dark theme context)
+        const NODE_STYLES = [
+            'sky-300', 'green-300', 'violet-300', 'pink-300', 'teal-300', 'yellow-300', 'red-300', 'blue-300'
+        ];
+
+        // --- Module State (Private) ---
+        let graphNodes = [];
+        let graphEdges = [];
+        let containerEl = null;
+        let svgEl = null;
+        let simulationTimer = null;
+        let isDragging = false;
+        let k_size = 0; // Target Clique size
+
+        // --- Internal Utilities ---
+
+        /**
+         * Simple color mapping utility.
+         */
+        function getTailwindColor(tailwindClass) {
+            const map = {
+                'sky-300': '#7dd3fc', 'green-300': '#86efac', 'violet-300': '#c4b5fd', 
+                'pink-300': '#f9a8d4', 'teal-300': '#5eead4', 'yellow-300': '#fcd34d', 
+                'red-300': '#fca5a5', 'blue-300': '#93c5fd'
+            };
+            return map[tailwindClass] || '#FFFFFF';
         }
-
-        // Main function to build the tree
-        function buildHuffmanTree(text) {
-            const freqMap = new Map();
-            for (const char of text) {
-                freqMap.set(char, (freqMap.get(char) || 0) + 1);
-            }
-
-            const priorityQueue = [];
-            for (const [char, freq] of freqMap.entries()) {
-                priorityQueue.push(new HuffmanNode(char, freq));
-            }
-
-            if (priorityQueue.length === 1) {
-                const leaf = priorityQueue[0];
-                const root = new HuffmanNode(null, leaf.freq, leaf, null);
-                return { root, codes: { [leaf.char]: '0' } };
-            }
-
-            while (priorityQueue.length > 1) {
-                priorityQueue.sort((a, b) => a.freq - b.freq);
-                const left = priorityQueue.shift();
-                const right = priorityQueue.shift();
-                const parent = new HuffmanNode(null, left.freq + right.freq, left, right);
-                priorityQueue.push(parent);
-            }
-
-            const root = priorityQueue[0];
-            const codes = {};
-            generateCodes(root, "", codes);
-            return { root, codes };
-        }
-
-        // Recursive function to generate codes
-        function generateCodes(node, currentCode, codes) {
-            if (node === null) return;
-            if (node.isLeaf()) {
-                codes[node.char] = currentCode || "0";
-            }
-            generateCodes(node.left, currentCode + "0", codes);
-            generateCodes(node.right, currentCode + "1", codes);
-        }
-
         
-        // --- 2. D3.js Visualization (with Animation) ---
+        // --- Physics Simulation Core ---
 
-        const svg = d3.select("#tree-svg");
-        const width = svg.node().clientWidth;
-        const height = svg.node().clientHeight;
-        const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-        
-        // We create a 'g' element (group) to hold the tree,
-        // and apply margins.
-        const g = svg.append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
-        
-        // Create the tree layout
-        const treeLayout = d3.tree().size([
-            width - margin.left - margin.right,
-            height - margin.top - margin.bottom
-        ]);
+        function tick(iteration) {
+            const width = containerEl.clientWidth;
+            const height = containerEl.clientHeight;
+            const center = { x: width / 2, y: height / 2 };
 
-        function drawTree(rootNode) {
-            // Clear previous tree
-            g.selectAll("*").remove();
+            // Apply forces
+            graphNodes.forEach(source => {
+                // Initialize velocity if missing
+                if (source.vx === undefined) { 
+                    source.vx = (Math.random() - 0.5) * 2; 
+                    source.vy = (Math.random() - 0.5) * 2;
+                }
 
-            if (!rootNode) return;
+                // 1. Repulsion (Node-Node)
+                graphNodes.forEach(target => {
+                    if (source !== target) {
+                        const dx = source.x - target.x;
+                        const dy = source.y - target.y;
+                        const dist2 = dx * dx + dy * dy;
+                        const dist = Math.sqrt(dist2);
 
-            // 1. Convert our HuffmanNode data into a D3-readable hierarchy
-            const hierarchy = d3.hierarchy(rootNode, d => {
-                const children = [];
-                if (d.left) children.push(d.left);
-                if (d.right) children.push(d.right);
-                return children.length > 0 ? children : null;
+                        if (dist > 0) {
+                            const force = REPULSION_FORCE / dist2;
+                            source.vx += force * dx / dist;
+                            source.vy += force * dy / dist;
+                        }
+                    }
+                });
+
+                // 2. Gravity/Centering (Attraction to Center)
+                const centerForce = 0.005; 
+                source.vx -= centerForce * (source.x - center.x);
+                source.vy -= centerForce * (source.y - center.y);
+
+                // 3. Edges (Attraction/Spring) - Only for connected nodes in different clauses
+                graphEdges.forEach(edge => {
+                    let other = (edge.source === source) ? edge.target : (edge.target === source) ? edge.source : null;
+                    if (other) {
+                         const dx = other.x - source.x;
+                         const dy = other.y - source.y;
+                         const dist = Math.sqrt(dx * dx + dy * dy);
+                         const desiredLength = width / (k_size * 2 + 3); // Dynamic link length
+
+                         const force = ATTRACTION_STRENGTH * (dist - desiredLength);
+
+                         source.vx += force * dx / dist;
+                         source.vy += force * dy / dist;
+                    }
+                });
             });
 
-            // 2. Calculate (x, y) position for each node
-            const treeData = treeLayout(hierarchy);
+            // Update positions and apply damping
+            graphNodes.forEach(node => {
+                if (node.fx === undefined) { // Check if not fixed (i.e., not being dragged)
+                    // Apply damping
+                    node.vx *= DAMPING_FACTOR;
+                    node.vy *= DAMPING_FACTOR;
 
-            // 3. Draw the Links (lines)
-            const links = g.selectAll(".link")
-                .data(treeData.links())
-                .enter()
-                .append("g")
-                .attr("class", "link-group");
+                    // Clamp velocity
+                    const speed = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
+                    if (speed > MAX_VELOCITY) {
+                        node.vx = (node.vx / speed) * MAX_VELOCITY;
+                        node.vy = (node.vy / speed) * MAX_VELOCITY;
+                    }
+
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    // Boundary checks (clamp position)
+                    node.x = Math.max(NODE_HALF_SIZE + PADDING, Math.min(width - NODE_HALF_SIZE - PADDING, node.x));
+                    node.y = Math.max(NODE_HALF_SIZE + PADDING, Math.min(height - NODE_HALF_SIZE - PADDING, node.y));
+                }
+            });
+
+            // Re-render
+            applyTransform();
+
+            // Stop condition
+            if (iteration < MAX_ITERATIONS) {
+                simulationTimer = requestAnimationFrame(() => tick(iteration + 1));
+            } else {
+                 // Final gentle nudge and stop
+                 graphNodes.forEach(n => { n.vx = n.vy = 0; });
+            }
+        }
+
+        function startSimulation() {
+            stopSimulation(); // Ensure previous simulation is stopped
+            if (graphNodes.length > 0) {
+                // Initialize positions randomly at the start
+                const width = containerEl.clientWidth;
+                const height = containerEl.clientHeight;
+                graphNodes.forEach(node => {
+                    // Initial random position in the center area
+                    node.x = width / 2 + (Math.random() - 0.5) * 50;
+                    node.y = height / 2 + (Math.random() - 0.5) * 50;
+                    // Reset velocity/fix
+                    node.vx = node.vy = 0;
+                    node.fx = node.fy = undefined;
+                });
+                tick(0); // Start the simulation loop
+            }
+        }
+
+        function stopSimulation() {
+            if (simulationTimer) {
+                cancelAnimationFrame(simulationTimer);
+                simulationTimer = null;
+            }
+        }
+
+        /**
+         * Renders nodes and edges to the DOM/SVG based on their stored (x, y) coordinates.
+         */
+        function renderElements() {
+            if (svgEl) svgEl.innerHTML = '';
+            
+            const edgeFragment = document.createDocumentFragment();
+            const nodeFragment = document.createDocumentFragment(); 
+            const NS = 'http://www.w3.org/2000/svg';
+
+            // 1. Render Edges (SVG Lines)
+            graphEdges.forEach(edge => {
+                const line = document.createElementNS(NS, 'line');
+                // MODIFIED: Ensure solid white stroke for clear visibility
+                line.setAttribute('class', 'graph-edge opacity-100'); 
+                line.setAttribute('stroke', 'white');
+                line.setAttribute('stroke-width', '2');
+                edgeFragment.appendChild(line);
+                edge.el = line;
+            });
+            if (svgEl) svgEl.appendChild(edgeFragment);
+
+            // 2. Render Nodes (SVG Groups with Circle and Text)
+            graphNodes.forEach(node => {
+                const group = document.createElementNS(NS, 'g');
+                group.setAttribute('class', 'graph-node-group');
+                group.id = node-group-${node.id};
+                group.setAttribute('transform', translate(${node.x}, ${node.y}));
                 
-            // The path itself
-            const linkPath = links.append("path")
-                .attr("class", "link")
-                .attr("d", d3.linkVertical()
-                    .x(d => d.x)
-                    .y(d => d.y)
-                );
+                const circle = document.createElementNS(NS, 'circle');
+                const styleClass = NODE_STYLES[node.clauseIndex % NODE_STYLES.length];
+                const color = getTailwindColor(styleClass);
+                
+                circle.setAttribute('r', NODE_HALF_SIZE);
+                circle.setAttribute('cx', 0);
+                circle.setAttribute('cy', 0);
+                circle.setAttribute('fill', 'var(--bg-card)'); 
+                circle.setAttribute('class', graph-node-circle border-2 hover:shadow-lg);
+                circle.style.cssText = fill: var(--bg-card); stroke: ${color};;
+                
+                const text = document.createElementNS(NS, 'text');
+                text.setAttribute('class', 'graph-node-label');
+                text.setAttribute('font-size', '14px');
+                text.textContent = node.literal.replace('~', '¬');
 
-            // --- Link Animation ---
-            // Get total length of each path
-            linkPath.each(function() {
-                const totalLength = this.getTotalLength();
-                d3.select(this)
-                    .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
-                    .attr("stroke-dashoffset", totalLength) // Start "invisible"
-                    .transition() // Start D3 transition
-                    .duration(1000)
-                    .ease(d3.easeCubicOut)
-                    .attr("stroke-dashoffset", 0); // Animate to "fully drawn"
+                group.appendChild(circle);
+                group.appendChild(text);
+                nodeFragment.appendChild(group);
+
+                node.el = { group, circle, text }; 
+
+                // Attach handlers (Drag, Tooltip)
+                addDragHandlers(group, node);
+                addTooltipHandlers(group, node);
+            });
+            if (svgEl) svgEl.appendChild(nodeFragment);
+
+            // Apply final positions
+            applyTransform();
+            
+            // Start the physics simulation
+            startSimulation();
+        }
+
+
+        /**
+         * Updates the SVG element positions based on calculated coordinates.
+         */
+        function applyTransform() {
+            graphNodes.forEach(node => {
+                if (node.el && node.el.group) {
+                    node.el.group.setAttribute('transform', translate(${node.x}, ${node.y}));
+                }
+            });
+
+            graphEdges.forEach(edge => {
+                if (edge.el) {
+                    edge.el.setAttribute('x1', edge.source.x);
+                    edge.el.setAttribute('y1', edge.source.y);
+                    edge.el.setAttribute('x2', edge.target.x);
+                    edge.el.setAttribute('y2', edge.target.y);
+                }
+            });
+        }
+
+
+        // --- Interactivity Handlers (Drag) ---
+
+        function addDragHandlers(group, node) {
+            let active = false;
+            let containerRect;
+            let startX, startY;
+            
+            function dragStart(e) {
+                e.preventDefault(); 
+                stopSimulation(); // Stop simulation on drag start
+
+                const clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
+
+                containerRect = containerEl.getBoundingClientRect();
+
+                // Fix the node position for dragging
+                node.fx = node.x;
+                node.fy = node.y;
+
+                startX = clientX - containerRect.left - node.x;
+                startY = clientY - containerRect.top - node.y;
+
+                active = true;
+                isDragging = true;
+                group.style.cursor = 'grabbing';
+                node.el.circle.setAttribute('stroke-width', 4);
+            }
+
+            function dragEnd() {
+                if (!active) return;
+                active = false;
+                isDragging = false;
+                group.style.cursor = 'grab';
+                node.el.circle.setAttribute('stroke-width', 2);
+                
+                // Unfix the node and restart the simulation
+                node.fx = node.fy = undefined;
+                startSimulation();
+            }
+
+            function drag(e) {
+                if (!active) return;
+                e.preventDefault();
+
+                const clientX = e.type.startsWith("touch") ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.startsWith("touch") ? e.touches[0].clientY : e.clientY;
+                const width = containerEl.clientWidth;
+                const height = containerEl.clientHeight;
+
+                let newX = clientX - containerRect.left - startX;
+                let newY = clientY - containerRect.top - startY;
+
+                // Clamp position within boundaries
+                node.x = Math.max(NODE_HALF_SIZE + PADDING, Math.min(width - NODE_HALF_SIZE - PADDING, newX));
+                node.y = Math.max(NODE_HALF_SIZE + PADDING, Math.min(height - NODE_HALF_SIZE - PADDING, newY));
+                
+                // Update fixed position and transform instantly
+                node.fx = node.x;
+                node.fy = node.y;
+                applyTransform();
+            }
+
+            group.addEventListener("mousedown", dragStart);
+            document.addEventListener("mouseup", dragEnd);
+            document.addEventListener("mousemove", drag);
+
+            group.addEventListener("touchstart", dragStart, {passive: false});
+            document.addEventListener("touchend", dragEnd);
+            document.addEventListener("touchmove", drag, {passive: false});
+
+            group.style.cursor = 'grab';
+        }
+
+        function addTooltipHandlers(group, node) {
+            if (!group) return;
+
+            group.addEventListener('mouseenter', (e) => {
+                if(isDragging) return;
+                // Dispatch custom event for index.html to handle tooltips
+                containerEl.dispatchEvent(new CustomEvent('graph-tooltip', {
+                    detail: {
+                        text: Literal: ${node.literal.replace('~', '¬')} | Clause: C${node.clauseIndex + 1},
+                        x: e.clientX,
+                        y: e.clientY,
+                        show: true
+                    }
+                }));
+                node.el.circle.setAttribute('stroke-width', 4);
+            });
+
+            group.addEventListener('mouseleave', () => {
+                containerEl.dispatchEvent(new CustomEvent('graph-tooltip', { detail: { show: false } }));
+                node.el.circle.setAttribute('stroke-width', 2);
+            });
+        }
+        
+        /**
+         * Public API to create the graph instance.
+         */
+        function createInteractiveCliqueGraph(containerIdParam, svgId) {
+            containerEl = document.getElementById(containerIdParam);
+            svgEl = document.getElementById(svgId);
+
+            if (!containerEl || !svgEl) {
+                console.error("Graph initialization failed: Container or SVG element not found.");
+                return { updateGraph: () => {}, resetView: () => {}, animateSequence: () => {}, highlightClique: () => {} };
+            }
+            
+            return {
+                /** Updates graph data, computes static layout, and renders. */
+                updateGraph: (nodes, edges, k) => {
+                    stopSimulation();
+                    graphNodes = nodes.map(n => ({ ...n, el: null, x: 0, y: 0, vx: 0, vy: 0 })); 
+                    graphEdges = edges.map(e => ({ source: nodes.find(n => n.id === e.source.id), target: nodes.find(n => n.id === e.target.id), el: null }));
+                    k_size = k;
+
+                    if (graphNodes.length > 0) {
+                        renderElements(); // Render to DOM and starts simulation
+                    } else {
+                         svgEl.innerHTML = '';
+                    }
+                },
+                /** Simple sequence animation (required for Play button API). */
+                animateSequence: ({ nodeDelay = 100 }) => {
+                    return new Promise(resolve => {
+                        let delay = 0;
+                        
+                        graphNodes.forEach((node, index) => {
+                            setTimeout(() => {
+                                if (node.el) node.el.group.style.opacity = 1;
+                            }, delay + index * nodeDelay);
+                        });
+
+                        setTimeout(resolve, delay + graphNodes.length * nodeDelay + 500);
+                    });
+                },
+                
+                /** Advanced: Highlights a potential satisfying clique (Greedy Approximation). */
+                highlightClique: () => {
+                    // 1. Reset all highlights
+                    graphNodes.forEach(n => n.el.circle.classList.remove('clique-node-highlight'));
+                    graphEdges.forEach(e => e.el.classList.remove('clique-edge-highlight'));
+                    
+                    if (k_size === 0) return { found: false, clique: [] };
+                    
+                    // Simple search for a valid set (not true NP-Complete solving, just for demo)
+                    let foundCliqueNodes = [];
+                    let possibleAssignment = {}; // { variable: true/false }
+                    let success = true;
+
+                    // Greedily pick the first literal from each clause that doesn't contradict a previous assignment
+                    for (let i = 0; i < k_size; i++) {
+                        const clauseNodes = graphNodes.filter(n => n.clauseIndex === i);
+                        let selectedNode = null;
+                        
+                        // Try to find a non-contradictory literal from this clause
+                        for (let node of clauseNodes) {
+                            const lit = node.literal;
+                            const varName = lit.replace('~', '');
+                            const isNegated = lit.startsWith('~');
+                            
+                            // Check for contradiction with existing assignment
+                            if (possibleAssignment[varName] !== undefined && possibleAssignment[varName] !== !isNegated) {
+                                // Contradiction: skip this literal
+                                continue;
+                            }
+                            
+                            // No contradiction or variable not yet assigned: select this one
+                            selectedNode = node;
+                            possibleAssignment[varName] = !isNegated; // Set the variable's truth value
+                            break; 
+                        }
+
+                        if (selectedNode) {
+                            foundCliqueNodes.push(selectedNode);
+                        } else {
+                            // If no literal in a clause can be picked without contradiction, a clique of size k might not exist
+                            success = false;
+                            break; 
+                        }
+                    }
+
+                    if (foundCliqueNodes.length === k_size && success) {
+                        // 2. Highlight Nodes
+                        foundCliqueNodes.forEach(node => {
+                            node.el.circle.classList.add('clique-node-highlight');
+                        });
+
+                        // 3. Highlight Edges within the clique
+                        graphEdges.forEach(edge => {
+                            if (foundCliqueNodes.includes(edge.source) && foundCliqueNodes.includes(edge.target)) {
+                                edge.el.classList.add('clique-edge-highlight');
+                                edge.el.style.opacity = 1; // Ensure full visibility
+                            }
+                        });
+                        return { found: true, clique: foundCliqueNodes, assignment: possibleAssignment };
+                    }
+                    
+                    // If no simple clique found (or formula is unsatisfiable)
+                    document.getElementById('clique-stats').textContent = 'Could not find a satisfying clique of size k. The formula may be unsatisfiable.';
+                    return { found: false, clique: [] };
+                }
+            };
+        }
+        
+        // =================================================================
+        // MAIN APPLICATION LOGIC (index.html flow)
+        // =================================================================
+
+        // --- UI Elements ---
+        const formulaInput = document.getElementById('formula-input');
+        const visualizeBtn = document.getElementById('visualize-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const playAnimationBtn = document.getElementById('play-animation-btn');
+        const findCliqueBtn = document.getElementById('find-clique-btn');
+        const exampleButtons = document.querySelectorAll('.example-btn');
+        
+        const reductionContainer = document.getElementById('reduction-steps-container');
+        const stepItems = document.querySelectorAll('.step-item');
+        const stepLineFill = document.getElementById('step-line-fill');
+        const stepPanels = [
+            document.getElementById('panel-1'),
+            document.getElementById('panel-2'),
+            document.getElementById('panel-3')
+        ];
+
+        // --- Data & State ---
+        let currentStep = 0; // 0: Input, 1: SAT, 2: 3-CNF, 3: CLIQUE
+        let transformationData = {
+            clauses: [],
+            k: 0,
+            dummyCount: 0
+        };
+        let cliqueGraph = null; // Graph instance holder
+        
+        // --- Initialize Graph Instance ---
+        // NOTE: script is at the end of body, so DOM is already available. Initialize immediately.
+        cliqueGraph = createInteractiveCliqueGraph('clique-graph-container', 'clique-graph');
+        updateButtonState(0);
+        // Set initial state for 3-CNF panel text (since initFlow isn't called yet)
+        if (formulaInput) document.getElementById('sat-output').textContent = formulaInput.value;
+
+
+        // --- UTILITY FUNCTIONS (Parsing & Reduction) ---
+        
+        function cleanFormula(input) {
+            let cleaned = input.toUpperCase();
+            cleaned = cleaned.replace(/OR/g, '|').replace(/AND/g, '&').replace(/NOT/g, '~').replace(/\s+/g, '').trim();
+            return cleaned;
+        }
+
+        function parseFormula(input) {
+            try {
+                const cleanedInput = cleanFormula(input);
+                if (!cleanedInput) return [];
+                
+                const clauses = cleanedInput.split('&')
+                    .map(c => c.replace(/[()]/g, '')) 
+                    .filter(c => c.length > 0)
+                    .map(c => c.split('|').map(l => l.trim()).filter(l => l.length > 0)); 
+                
+                return clauses;
+            } catch (e) { return null; }
+        }
+        
+        function areContradictory(lit1, lit2) {
+            const l1 = lit1.replace('~', '');
+            const l2 = lit2.replace('~', '');
+            const neg1 = lit1.startsWith('~');
+            const neg2 = lit2.startsWith('~');
+            return l1 === l2 && neg1 !== neg2;
+        }
+
+        // NOTE: Standard textbook reduction logic (simplified for demonstration)
+        function transformTo3CNF(originalClauses) {
+            let newClauses = [];
+            let dummyVarIndex = 1;
+            
+            originalClauses.forEach(clause => {
+                let len = clause.length;
+                
+                if (len === 1) { 
+                    let c = clause[0];
+                    let z1 = Z${dummyVarIndex++};
+                    let z2 = Z${dummyVarIndex++};
+                    newClauses.push([c, z1, z2]);
+                    newClauses.push([c, z1, ~${z2}]);
+                    newClauses.push([c, ~${z1}, z2]);
+                    newClauses.push([c, ~${z1}, ~${z2}]);
+                } else if (len === 2) { 
+                    let [c1, c2] = clause;
+                    let z1 = Z${dummyVarIndex++};
+                    newClauses.push([c1, c2, z1]);
+                    newClauses.push([c1, c2, ~${z1}]);
+                } else if (len === 3) {
+                    newClauses.push(clause);
+                } else if (len > 3) { 
+                    let z_in = null;
+                    for (let i = 0; i < len; i++) {
+                        const l = clause[i];
+                        if (i === 0) {
+                            const z_out = Z${dummyVarIndex++};
+                            newClauses.push([l, clause[i+1], z_out]);
+                            z_in = z_out;
+                            i++; // Skip the next literal
+                        } else if (i < len - 2) {
+                            const z_out = Z${dummyVarIndex++};
+                            newClauses.push([~${z_in}, l, z_out]);
+                            z_in = z_out;
+                        } else if (i === len - 2) {
+                            newClauses.push([~${z_in}, l, clause[i+1]]);
+                            i++; // Skip last literal
+                        }
+                    }
+                }
             });
             
-            // Link labels ('0' or '1')
-            links.append("text")
-                .attr("class", "link-label")
-                .attr("x", d => (d.source.x + d.target.x) / 2)
-                .attr("y", d => (d.source.y + d.target.y) / 2)
-                .attr("dy", "-0.3em")
-                .attr("text-anchor", "middle")
-                .text(d => d.target.data === d.source.data.left ? "0" : "1")
-                .attr("opacity", 0) // Start invisible
-                .transition()
-                .duration(500)
-                .delay(800) // Appear after links are drawn
-                .attr("opacity", 1);
-
-
-            // 4. Draw the Nodes (circles and text)
-            const node = g.selectAll(".node")
-                .data(treeData.descendants())
-                .enter()
-                .append("g")
-                .attr("class", d => `node ${d.data.isLeaf() ? 'node--leaf' : 'node--internal'}`)
-                .attr("transform", d => `translate(${d.x},${d.y})`)
-                .attr("opacity", 0); // Start invisible for animation
-                
-            // Add circles
-            node.append("circle")
-                .attr("r", 18);
-
-            // Add text (frequency)
-            node.append("text")
-                .attr("dy", "0.35em")
-                .attr("text-anchor", "middle")
-                .text(d => d.data.freq);
-
-            // Add character label (only for leaf nodes)
-            node.filter(d => d.data.isLeaf())
-                .append("text")
-                .attr("class", "char-label")
-                .attr("dy", "-25px") // Position above the node
-                .attr("text-anchor", "middle")
-                .text(d => `'${d.data.char.replace(" ", "␣")}'`);
-                
-            // --- Node Animation ---
-            node.transition()
-                .duration(750)
-                .delay((d, i) => 500 + i * 10) // Staggered fade-in, after links
-                .ease(d3.easeCubicOut)
-                .attr("opacity", 1);
+            return { newClauses, dummyVarIndex: dummyVarIndex - 1 };
         }
 
-        // --- 3. UI Helper Functions ---
+        function generateGraphData(clauses) {
+            let nodes = [];
+            let edges = [];
+
+            clauses.forEach((clause, i) => {
+                clause.forEach(lit => {
+                    // Node ID is crucial for connecting edges later
+                    const nodeId = ${lit}_C${i};
+                    const node = { id: nodeId, literal: lit, clauseIndex: i };
+                    nodes.push(node);
+                });
+            });
+
+            // Build Edges based on the CLIQUE rule
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const n1 = nodes[i];
+                    const n2 = nodes[j];
+                    
+                    // Rule 1: Different clauses
+                    const isDifferentClause = n1.clauseIndex !== n2.clauseIndex;
+                    
+                    // Rule 2: Not contradictory
+                    const isCompatible = !areContradictory(n1.literal, n2.literal);
+                    
+                    if (isDifferentClause && isCompatible) {
+                        edges.push({ source: n1, target: n2 });
+                    }
+                }
+            }
+            return { nodes, edges, k: clauses.length };
+        }
+
+        // --- UI Control Functions ---
         
-        function updateTable(codes) {
-            const tableBody = d3.select("#codes-table tbody");
-            tableBody.selectAll("*").remove(); // Clear old rows
-
-            const sortedCodes = Object.entries(codes).sort((a, b) => a[0].localeCompare(b[0]));
-
-            for (const [char, code] of sortedCodes) {
-                const row = tableBody.append("tr");
-                row.append("td").text(`'${char.replace(" ", "␣")}'`);
-                row.append("td").text(code);
-            }
+        function updateButtonState(step) {
+            nextStepBtn.disabled = step >= 3;
+            playAnimationBtn.disabled = step >= 3;
+            findCliqueBtn.disabled = step < 3;
         }
 
-        function showVizPlaceholder(show, message) {
-            const placeholder = d3.select("#viz-placeholder");
-            if (show) {
-                placeholder.html(`<p>${message}</p>`);
-                placeholder.style("opacity", 1);
-                g.selectAll("*").remove(); // Clear the tree
+        function updateStepUI(step) {
+            // Update Step Indicators
+            stepItems.forEach(item => {
+                const itemStep = parseInt(item.getAttribute('data-step'));
+                item.classList.toggle('active', itemStep <= step);
+            });
+
+            if (step === 1) stepLineFill.style.width = '0%';
+            else if (step === 2) stepLineFill.style.width = '50%';
+            else if (step === 3) {
+                 stepLineFill.style.width = '100%';
+                 stopSimulation(); // Ensure simulation is running only when on step 3
+                 if(cliqueGraph) startSimulation();
             } else {
-                placeholder.style("opacity", 0);
+                 stopSimulation();
+            }
+
+            // Update Panels Visibility
+            stepPanels.forEach((panel, index) => {
+                const panelStep = index + 1;
+                const isCurrent = panelStep === step;
+
+                if (isCurrent) {
+                    panel.classList.remove('hidden', 'fade-out');
+                    panel.classList.add('fade-in');
+                } else {
+                    panel.classList.remove('fade-in');
+                    panel.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (!panel.classList.contains('fade-in')) {
+                            panel.classList.add('hidden');
+                        }
+                    }, 400); 
+                }
+            });
+            
+            updateButtonState(step);
+        }
+
+        // --- Data Rendering ---
+
+        function renderSAT(formula) {
+            document.getElementById('sat-output').textContent = formula;
+        }
+
+        function render3CNF(clauses, originalCount, dummyCount) {
+            document.getElementById('3cnf-stats').innerHTML = The original formula (${originalCount} clause${originalCount !== 1 ? 's' : ''}) resulted in **${clauses.length}** 3-CNF clauses, using **${dummyCount}** new z variables.;
+            
+            const outputEl = document.getElementById('3cnf-output');
+            outputEl.innerHTML = clauses.map((clause, index) => `
+                <div class="flex flex-wrap items-center">
+                    <span class="text-gray-400 font-bold mr-2">C${index + 1}:</span>
+                    <span class="text-white">(${clause.map(l => l.replace('~', '¬')).join(' ∨ ')})</span>
+                </div>
+            `).join('<span class="text-indigo-400 font-bold mx-2">∧</span>');
+        }
+
+        function renderClique(data) {
+            document.getElementById('k-value').textContent = data.k;
+            document.getElementById('clique-stats').innerHTML = Graph where nodes represent literals and edges connect compatible literals from different clauses. A clique of size **k** (${data.k}) indicates a satisfying assignment exists.;
+            
+            // Prepare graph data
+            const graphData = generateGraphData(data.clauses);
+
+            // Call the imported graph function
+            if (cliqueGraph && cliqueGraph.updateGraph) {
+                cliqueGraph.updateGraph(graphData.nodes, graphData.edges, graphData.k);
             }
         }
 
-        // --- 4. Event Listeners & Main Logic ---
+        // --- Main Flow Control ---
 
-        document.getElementById("visualize-btn").addEventListener("click", handleVisualize);
+        async function initFlow() {
+            currentStep = 0;
+            
+            const inputFormula = formulaInput.value;
+            if (!inputFormula) return;
 
-        function handleVisualize() {
-            const text = document.getElementById("text-input").value;
-            if (!text) {
-                // Use a non-blocking message instead of alert()
-                showVizPlaceholder(true, "<span style='color: #ff6b6b;'>Please enter some text.</span>");
-                updateTable({}); // Clear table
+            const originalClauses = parseFormula(inputFormula);
+            if (!originalClauses || originalClauses.some(c => c.length === 0)) {
+                // Use a custom modal instead of alert
+                console.error("Invalid formula format. Please check your input and operators.");
+                // Note: since this environment doesn't support custom modals, we rely on console error, but typically here we'd show a UI message.
                 return;
             }
 
-            showVizPlaceholder(false); // Hide placeholder
+            reductionContainer.classList.remove('hidden', 'fade-out');
+            reductionContainer.classList.add('fade-in');
+
+            const reduction = transformTo3CNF(originalClauses);
+            const k_value = reduction.newClauses.length;
+
+            transformationData = {
+                clauses: reduction.newClauses,
+                k: k_value,
+                dummyCount: reduction.dummyVarIndex
+            };
             
-            // 1. Build the tree and get codes
-            const { root, codes } = buildHuffmanTree(text);
-            
-            // 2. Draw the animated tree using D3
-            drawTree(root);
-            
-            // 3. Update the codes table
-            updateTable(codes);
+            // Render all content (Step 1, 2, and initial Step 3 setup)
+            renderSAT(inputFormula);
+            render3CNF(transformationData.clauses, originalClauses.length, transformationData.dummyCount);
+            renderClique(transformationData); 
+
+            currentStep = 1;
+            updateStepUI(currentStep);
         }
+
+        function advanceStep() {
+            if (currentStep < 3) {
+                currentStep++;
+                updateStepUI(currentStep);
+                
+                if (currentStep === 3 && cliqueGraph && cliqueGraph.animateSequence) {
+                    cliqueGraph.animateSequence({ nodeDelay: 100, edgeDelay: 50 });
+                }
+            }
+        }
+
+        async function playAnimation() {
+            if (currentStep === 3) return; 
+
+            updateButtonState(4); // Temporarily disable buttons during animation
+            stopSimulation();
+
+            for (let i = currentStep + 1; i <= 3; i++) {
+                currentStep = i;
+                updateStepUI(currentStep);
+                
+                if (currentStep === 3 && cliqueGraph && cliqueGraph.animateSequence) {
+                    // Animate node fade-in and edges later
+                    await cliqueGraph.animateSequence({ nodeDelay: 100, edgeDelay: 50 });
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 1500)); 
+                }
+            }
+             updateButtonState(currentStep); // Re-enable buttons after animation
+             // Re-start simulation if on step 3
+             if(currentStep === 3 && cliqueGraph) startSimulation();
+        }
+
+        function handleCliqueFind() {
+            const result = cliqueGraph.highlightClique();
+            if (result.found) {
+                let assignmentText = Object.entries(result.assignment)
+                    .map(([v, t]) => ${v}=${t ? 'T' : 'F'}).join(', ');
+                    
+                document.getElementById('clique-stats').innerHTML = `
+                    <span class="text-green-400 font-bold">A satisfying clique of size ${result.clique.length} was found!</span> 
+                    This corresponds to the assignment: <code class="font-mono-code bg-gray-700 px-2 py-1 rounded-md text-white">${assignmentText}</code>.
+                `;
+            } else {
+                 document.getElementById('clique-stats').innerHTML = `
+                    <span class="text-red-400 font-bold">Could not find a simple satisfying clique.</span> The formula is likely unsatisfiable or requires a more complex search.
+                `;
+            }
+        }
+
+        // --- Initialization and Event Bindings ---
+
+        visualizeBtn.addEventListener('click', initFlow);
+        nextStepBtn.addEventListener('click', advanceStep);
+        playAnimationBtn.addEventListener('click', playAnimation);
+        findCliqueBtn.addEventListener('click', handleCliqueFind);
         
-        // --- 5. GSAP Intro Animation ---
-        
-        document.addEventListener("DOMContentLoaded", () => {
-            // A "timeline" for sequential animations
-            const tl = gsap.timeline();
-            
-            // Animate in panels
-            tl.to(".controls-panel", { 
-                opacity: 1, 
-                y: 0, 
-                duration: 1, 
-                ease: "power3.out" 
-            })
-            .to(".viz-panel", { 
-                opacity: 1, 
-                scale: 1, 
-                duration: 1, 
-                ease: "power3.out" 
-            }, "-=0.8"); // Start 0.8s before the previous one ends
-            
-            // Animate in controls
-            tl.to(".title-line", {
-                opacity: 1,
-                y: 0,
-                duration: 0.8,
-                stagger: 0.15, // Animate lines one after another
-                ease: "power4.out"
-            }, "-=0.5")
-            .to(".subtitle", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.5")
-            .to("label", { opacity: 1, duration: 0.5 }, "-=0.2")
-            .to("textarea", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-            .to("button", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-            .to(".table-container", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4");
-            
-            // Also run a default visualization
-            handleVisualize();
+        exampleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                formulaInput.value = button.getAttribute('data-formula');
+                initFlow();
+            });
         });
 
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+        
+        // Simple Tooltip for the graph (needs to be outside the graph module for body-relative positioning)
+        const tooltip = document.createElement('div');
+        tooltip.style.cssText = `
+            position: fixed;
+            background: #1F2937;
+            color: #E5E7EB;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 50;
+        `;
+        document.body.appendChild(tooltip);
+
+        document.getElementById('clique-graph-container').addEventListener('graph-tooltip', (e) => {
+            if (e.detail.show) {
+                tooltip.textContent = e.detail.text;
+                // Position 15px right and 15px down from cursor
+                tooltip.style.left = ${e.detail.x + 15}px;
+                tooltip.style.top = ${e.detail.y + 15}px;
+                tooltip.style.opacity = 1;
+            } else {
+                tooltip.style.opacity = 0;
+            }
+        });
     </script>
 </body>
 </html>
