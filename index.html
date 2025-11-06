@@ -1,585 +1,1186 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAA project </title>
 
-    <!-- 1. Load Premium Font (Inter) -->
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Huffman Code Visualizer</title>
+
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
+
+
     <style>
+
         /* --- 2. High-Design CSS Styling --- */
 
+
+
         :root {
+
             --bg: #111317;
+
             --panel-bg: rgba(255, 255, 255, 0.05);
+
             --panel-border: rgba(255, 255, 255, 0.1);
+
             --text-primary: #ffffff;
+
             --text-secondary: #aaaaeb;
+
             --accent: #007bff;
+
             --accent-hover: #0056b3;
+
             --shadow: rgba(0, 0, 0, 0.2);
+
             --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
         }
+
+
 
         /* Base Setup */
+
         * {
+
             box-sizing: border-box;
+
         }
+
+
 
         body {
+
             font-family: var(--font-family);
+
             background-color: var(--bg);
+
             color: var(--text-primary);
+
             margin: 0;
+
             padding: 2rem;
+
             min-height: 100vh;
+
             overflow: hidden;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
         }
+
+
 
         /* Layout */
+
         main {
+
             display: grid;
+
             grid-template-columns: 380px 1fr;
+
             gap: 2rem;
+
             width: 100%;
+
             max-width: 1400px;
+
             height: 80vh;
+
             max-height: 800px;
+
         }
+
+
 
         /* Glassmorphism Panel Style */
+
         .panel {
+
             background: var(--panel-bg);
+
             border: 1px solid var(--panel-border);
+
             border-radius: 16px;
+
             backdrop-filter: blur(10px);
+
             -webkit-backdrop-filter: blur(10px);
+
             padding: 2rem;
+
             box-shadow: 0 8px 32px var(--shadow);
+
             overflow: hidden;
+
         }
+
+
 
         /* --- Controls Panel (Left) --- */
+
         .controls-panel {
+
             display: flex;
+
             flex-direction: column;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(20px);
+
         }
+
+
 
         /* Title (for GSAP) */
+
         .title {
+
             font-weight: 900;
+
             font-size: 2.5rem;
+
             line-height: 1.1;
+
             margin: 0 0 0.5rem;
+
             color: var(--text-primary);
+
         }
-        
+
+       
+
         .title-line {
+
             display: block;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(100%);
+
         }
-        
+
+       
+
         /* Wrapped for animation */
+
         .title-wrap {
+
             overflow: hidden; /* Clips the text for the reveal */
+
         }
+
+
 
         .subtitle {
+
             font-size: 1rem;
+
             font-weight: 400;
+
             color: var(--text-secondary);
+
             margin: 0 0 2rem;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(20px);
+
         }
+
+
 
         label {
+
             font-size: 0.875rem;
+
             font-weight: 600;
+
             color: var(--text-secondary);
+
             margin-bottom: 0.5rem;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
         }
+
+
 
         textarea {
+
             font-family: var(--font-family);
+
             font-size: 1rem;
+
             background: rgba(0, 0, 0, 0.2);
+
             border: 1px solid var(--panel-border);
+
             border-radius: 8px;
+
             color: var(--text-primary);
+
             padding: 0.75rem;
+
             height: 120px;
+
             resize: none;
+
             margin-bottom: 1rem;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(20px);
+
         }
+
+
 
         textarea:focus {
+
             outline: none;
+
             border-color: var(--accent);
+
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+
         }
+
+
 
         button {
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
             gap: 0.5rem;
+
             font-family: var(--font-family);
+
             font-size: 1rem;
+
             font-weight: 600;
+
             background: var(--accent);
+
             color: var(--text-primary);
+
             border: none;
+
             border-radius: 8px;
+
             padding: 0.875rem;
+
             cursor: pointer;
+
             transition: all 0.2s ease-in-out;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(20px);
+
         }
+
+
 
         button:hover {
+
             background: var(--accent-hover);
+
             transform: translateY(-2px); /* Micro-interaction */
+
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+
         }
+
+
 
         button:active {
+
             transform: translateY(0);
+
         }
-        
+
+       
+
         /* Output Table */
+
         .table-container {
+
             flex-grow: 1;
+
             overflow-y: auto;
+
             margin-top: 1.5rem;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: translateY(20px);
+
         }
+
+
 
         #codes-table {
+
             width: 100%;
+
             border-collapse: collapse;
+
         }
+
+
 
         #codes-table th,
+
         #codes-table td {
+
             padding: 0.75rem;
+
             text-align: left;
+
             border-bottom: 1px solid var(--panel-border);
+
         }
-        
+
+       
+
         #codes-table th {
+
             font-size: 0.875rem;
+
             color: var(--text-secondary);
+
         }
-        
+
+       
+
         #codes-table td {
+
             font-family: monospace;
+
             font-size: 1rem;
+
             color: var(--text-primary);
+
         }
-        
+
+       
+
         #codes-table td:first-child {
+
             font-weight: 600;
+
         }
+
+
 
         /* --- Visualization Panel (Right) --- */
+
         .viz-panel {
+
             position: relative;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
             /* GSAP: Set initial animation state */
+
             opacity: 0;
+
             transform: scale(0.95);
+
         }
+
+
 
         #tree-svg {
+
             width: 100%;
+
             height: 100%;
+
         }
+
+
 
         #viz-placeholder {
+
             position: absolute;
+
             color: var(--text-secondary);
+
             font-weight: 600;
+
             text-align: center;
+
             transition: opacity 0.3s ease;
+
         }
+
+
 
         /* --- D3.js Tree Styles (Dark Mode) --- */
+
         .node circle {
+
             stroke: var(--accent);
+
             stroke-width: 3px;
+
         }
+
+
 
         .node--internal circle {
+
             fill: var(--bg);
+
         }
+
+
 
         .node--leaf circle {
+
             fill: #334;
+
         }
-        
+
+       
+
         .node text {
+
             font-size: 14px;
+
             font-weight: 600;
+
             fill: var(--text-primary);
+
         }
-        
+
+       
+
         .node .char-label {
+
             fill: var(--accent);
+
             font-size: 16px;
+
             font-weight: 700;
+
         }
+
+
 
         .link {
+
             fill: none;
+
             stroke: var(--panel-border);
+
             stroke-width: 2px;
+
         }
-        
+
+       
+
         .link-label {
+
             font-size: 12px;
+
             font-weight: 700;
+
             fill: var(--text-secondary);
+
         }
+
+
 
     </style>
+
 </head>
+
 <body>
 
-    <main>
-        <!-- Left Panel: Controls -->
-        <div class="panel controls-panel">
-            <h1 class="title">
-                <span class="title-wrap"><span class="title-line"></span></span>
-                <span class="title-wrap"><span class="title-line">HUFFMAN CODING </span></span>
-            </h1>
-            <p class="subtitle">enter text.</p>
 
-            <label for="text-input">Your Text</label>
-            <textarea id="text-input" placeholder="ENTER YOUR WORD"></textarea>
-            
+
+    <main>
+
+        <div class="panel controls-panel">
+
+            <h1 class="title">
+
+                <span class="title-wrap"><span class="title-line">DAA PROJECT</span></span>
+
+                <span class="title-wrap"><span class="title-line">HUFFMAN CODING </span></span>
+
+            </h1>
+
+            <p class="subtitle"></p>
+
+
+
+            <label for="text-input">Enter Your Text here</label>
+
+            <textarea id="text-input" placeholder="piyush"></textarea>
+
+           
+
             <button id="visualize-btn">
+
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13.01V2.99C2 2.44 2.45 2 3 2h10.01c.54 0 .99.45.99.99V13.01c0 .54-.45.99-.99.99H3c-.55 0-.99-.45-.99-.99Z"/><path d="M11 21.99h7.01c.54 0 .99-.45.99-.99V10.99c0-.54-.45-.99-.99-.99H11c-.55 0-.99.45-.99.99V21c0 .54.45.99.99.99Z"/><path d="M7 14v-2"/><path d="M17 11v-2"/></svg>
-                <span>Visualize</span>
+
+                <span>Generate huffman tree</span>
+
             </button>
 
+
+
             <div class="table-container">
+
                 <table id="codes-table">
+
                     <thead>
+
                         <tr>
-                            <th>Char</th>
+
+                            <th>Character</th>
+
                             <th>Code</th>
+
                         </tr>
+
                     </thead>
+
                     <tbody>
-                        <!-- Codes will be injected here -->
-                    </tbody>
+
+                        </tbody>
+
                 </table>
+
             </div>
+
         </div>
 
-        <!-- Right Panel: Visualization -->
+
+
         <div class="panel viz-panel">
+
             <div id="viz-placeholder">
+
                 <p>Your visualization will appear here.</p>
+
             </div>
+
             <svg id="tree-svg"></svg>
+
         </div>
+
     </main>
 
-    <!-- 3. Load JS Libraries -->
-    <!-- D3.js (for Data Visualization) -->
+
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- GSAP (for High-End Animation) -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-    <!-- 4. Main Application Logic -->
+
+
     <script>
-        
+
+       
+
         // --- 1. Huffman Algorithm Logic ---
-        
+
+       
+
         // Node class for building the tree
+
         class HuffmanNode {
+
             constructor(char, freq, left = null, right = null) {
+
                 this.char = char;
+
                 this.freq = freq;
+
                 this.left = left;
+
                 this.right = right;
+
             }
+
             isLeaf() {
+
                 return this.left === null && this.right === null;
+
             }
+
         }
+
+
 
         // Main function to build the tree
+
         function buildHuffmanTree(text) {
+
             const freqMap = new Map();
+
             for (const char of text) {
+
                 freqMap.set(char, (freqMap.get(char) || 0) + 1);
+
             }
+
+
 
             const priorityQueue = [];
+
             for (const [char, freq] of freqMap.entries()) {
+
                 priorityQueue.push(new HuffmanNode(char, freq));
+
             }
+
+
 
             if (priorityQueue.length === 1) {
+
                 const leaf = priorityQueue[0];
+
                 const root = new HuffmanNode(null, leaf.freq, leaf, null);
+
                 return { root, codes: { [leaf.char]: '0' } };
+
             }
+
+
 
             while (priorityQueue.length > 1) {
+
                 priorityQueue.sort((a, b) => a.freq - b.freq);
+
                 const left = priorityQueue.shift();
+
                 const right = priorityQueue.shift();
+
                 const parent = new HuffmanNode(null, left.freq + right.freq, left, right);
+
                 priorityQueue.push(parent);
+
             }
+
+
 
             const root = priorityQueue[0];
+
             const codes = {};
+
             generateCodes(root, "", codes);
+
             return { root, codes };
+
         }
+
+
 
         // Recursive function to generate codes
+
         function generateCodes(node, currentCode, codes) {
+
             if (node === null) return;
+
             if (node.isLeaf()) {
+
                 codes[node.char] = currentCode || "0";
+
             }
+
             generateCodes(node.left, currentCode + "0", codes);
+
             generateCodes(node.right, currentCode + "1", codes);
+
         }
 
-        
+
+
+       
+
         // --- 2. D3.js Visualization (with Animation) ---
 
+
+
         const svg = d3.select("#tree-svg");
+
         const width = svg.node().clientWidth;
+
         const height = svg.node().clientHeight;
+
         const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-        
+
+       
+
         // We create a 'g' element (group) to hold the tree,
+
         // and apply margins.
+
         const g = svg.append("g")
+
             .attr("transform", `translate(${margin.left},${margin.top})`);
-        
+
+       
+
         // Create the tree layout
+
         const treeLayout = d3.tree().size([
+
             width - margin.left - margin.right,
+
             height - margin.top - margin.bottom
+
         ]);
 
+
+
         function drawTree(rootNode) {
+
             // Clear previous tree
+
             g.selectAll("*").remove();
+
+
 
             if (!rootNode) return;
 
+           
+
+            // --- CHANGED ---
+
+            // This is the duration for each "step" of the build-up animation
+
+            const stepDuration = 800; // 800ms per level
+
+
+
             // 1. Convert our HuffmanNode data into a D3-readable hierarchy
+
             const hierarchy = d3.hierarchy(rootNode, d => {
+
                 const children = [];
+
                 if (d.left) children.push(d.left);
+
                 if (d.right) children.push(d.right);
+
                 return children.length > 0 ? children : null;
+
             });
+
+           
+
+            // --- CHANGED ---
+
+            // Get the max height (root's height) to calculate delays
+
+            // Leaves are height: 0, root is height: max
+
+            const maxHeight = hierarchy.height;
+
+
 
             // 2. Calculate (x, y) position for each node
+
             const treeData = treeLayout(hierarchy);
 
+
+
             // 3. Draw the Links (lines)
+
             const links = g.selectAll(".link")
+
                 .data(treeData.links())
+
                 .enter()
+
                 .append("g")
+
                 .attr("class", "link-group");
-                
+
+               
+
             // The path itself
+
             const linkPath = links.append("path")
+
                 .attr("class", "link")
+
                 .attr("d", d3.linkVertical()
+
                     .x(d => d.x)
+
                     .y(d => d.y)
+
                 );
 
+
+
             // --- Link Animation ---
+
             // Get total length of each path
-            linkPath.each(function() {
+
+            linkPath.each(function(d) { // --- CHANGED --- (Added `d` parameter)
+
                 const totalLength = this.getTotalLength();
+
                 d3.select(this)
+
                     .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+
                     .attr("stroke-dashoffset", totalLength) // Start "invisible"
+
                     .transition() // Start D3 transition
+
+                    // --- CHANGED ---
+
+                    // Delay animation based on the child's height (leaves are 0)
+
+                    .delay(d.target.height * stepDuration)
+
                     .duration(1000)
+
                     .ease(d3.easeCubicOut)
+
                     .attr("stroke-dashoffset", 0); // Animate to "fully drawn"
+
             });
-            
+
+           
+
             // Link labels ('0' or '1')
+
             links.append("text")
+
                 .attr("class", "link-label")
+
                 .attr("x", d => (d.source.x + d.target.x) / 2)
+
                 .attr("y", d => (d.source.y + d.target.y) / 2)
+
                 .attr("dy", "-0.3em")
+
                 .attr("text-anchor", "middle")
+
                 .text(d => d.target.data === d.source.data.left ? "0" : "1")
+
                 .attr("opacity", 0) // Start invisible
+
                 .transition()
+
                 .duration(500)
-                .delay(800) // Appear after links are drawn
+
+                // --- CHANGED ---
+
+                // Delay based on height, +500ms to appear *after* link draws
+
+                .delay(d => (d.target.height * stepDuration) + 500)
+
                 .attr("opacity", 1);
+
+
+
 
 
             // 4. Draw the Nodes (circles and text)
+
             const node = g.selectAll(".node")
+
                 .data(treeData.descendants())
+
                 .enter()
+
                 .append("g")
+
                 .attr("class", d => `node ${d.data.isLeaf() ? 'node--leaf' : 'node--internal'}`)
+
                 .attr("transform", d => `translate(${d.x},${d.y})`)
+
                 .attr("opacity", 0); // Start invisible for animation
-                
+
+               
+
             // Add circles
+
             node.append("circle")
+
                 .attr("r", 18);
 
+
+
             // Add text (frequency)
+
             node.append("text")
+
                 .attr("dy", "0.35em")
+
                 .attr("text-anchor", "middle")
+
                 .text(d => d.data.freq);
 
+
+
             // Add character label (only for leaf nodes)
+
             node.filter(d => d.data.isLeaf())
+
                 .append("text")
+
                 .attr("class", "char-label")
+
                 .attr("dy", "-25px") // Position above the node
+
                 .attr("text-anchor", "middle")
+
                 .text(d => `'${d.data.char.replace(" ", "␣")}'`);
-                
+
+               
+
             // --- Node Animation ---
+
             node.transition()
+
                 .duration(750)
-                .delay((d, i) => 500 + i * 10) // Staggered fade-in, after links
+
+                // --- CHANGED ---
+
+                // Delay node appearance based on its height (leaves first)
+
+                .delay(d => d.height * stepDuration)
+
                 .ease(d3.easeCubicOut)
+
                 .attr("opacity", 1);
+
         }
 
+
+
         // --- 3. UI Helper Functions ---
-        
+
+       
+
         function updateTable(codes) {
+
             const tableBody = d3.select("#codes-table tbody");
+
             tableBody.selectAll("*").remove(); // Clear old rows
+
+
 
             const sortedCodes = Object.entries(codes).sort((a, b) => a[0].localeCompare(b[0]));
 
+
+
             for (const [char, code] of sortedCodes) {
+
                 const row = tableBody.append("tr");
+
                 row.append("td").text(`'${char.replace(" ", "␣")}'`);
+
                 row.append("td").text(code);
+
             }
+
         }
 
+
+
         function showVizPlaceholder(show, message) {
+
             const placeholder = d3.select("#viz-placeholder");
+
             if (show) {
+
                 placeholder.html(`<p>${message}</p>`);
+
                 placeholder.style("opacity", 1);
+
                 g.selectAll("*").remove(); // Clear the tree
+
             } else {
+
                 placeholder.style("opacity", 0);
+
             }
+
         }
+
+
 
         // --- 4. Event Listeners & Main Logic ---
 
+
+
         document.getElementById("visualize-btn").addEventListener("click", handleVisualize);
 
+
+
         function handleVisualize() {
+
             const text = document.getElementById("text-input").value;
+
             if (!text) {
+
                 // Use a non-blocking message instead of alert()
+
                 showVizPlaceholder(true, "<span style='color: #ff6b6b;'>Please enter some text.</span>");
+
                 updateTable({}); // Clear table
+
                 return;
+
             }
 
+
+
             showVizPlaceholder(false); // Hide placeholder
-            
+
+           
+
             // 1. Build the tree and get codes
+
             const { root, codes } = buildHuffmanTree(text);
-            
+
+           
+
             // 2. Draw the animated tree using D3
+
             drawTree(root);
-            
+
+           
+
             // 3. Update the codes table
+
             updateTable(codes);
+
         }
-        
+
+       
+
         // --- 5. GSAP Intro Animation ---
-        
+
+       
+
         document.addEventListener("DOMContentLoaded", () => {
+
             // A "timeline" for sequential animations
+
             const tl = gsap.timeline();
-            
+
+           
+
             // Animate in panels
-            tl.to(".controls-panel", { 
-                opacity: 1, 
-                y: 0, 
-                duration: 1, 
-                ease: "power3.out" 
-            })
-            .to(".viz-panel", { 
-                opacity: 1, 
-                scale: 1, 
-                duration: 1, 
-                ease: "power3.out" 
-            }, "-=0.8"); // Start 0.8s before the previous one ends
-            
-            // Animate in controls
-            tl.to(".title-line", {
+
+            tl.to(".controls-panel", {
+
                 opacity: 1,
+
                 y: 0,
+
+                duration: 1,
+
+                ease: "power3.out"
+
+            })
+
+            .to(".viz-panel", {
+
+                opacity: 1,
+
+                scale: 1,
+
+                duration: 1,
+
+                ease: "power3.out"
+
+            }, "-=0.8"); // Start 0.8s before the previous one ends
+
+           
+
+            // Animate in controls
+
+            tl.to(".title-line", {
+
+                opacity: 1,
+
+                y: 0,
+
                 duration: 0.8,
+
                 stagger: 0.15, // Animate lines one after another
+
                 ease: "power4.out"
+
             }, "-=0.5")
+
             .to(".subtitle", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.5")
+
             .to("label", { opacity: 1, duration: 0.5 }, "-=0.2")
+
             .to("textarea", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
+
             .to("button", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
+
             .to(".table-container", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4");
-            
+
+           
+
             // Also run a default visualization
+
             handleVisualize();
+
         });
 
+
+
     </script>
+
 </body>
+
 </html>
+
