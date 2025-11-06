@@ -1,1186 +1,779 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Huffman Code Visualizer</title>
 
-
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-
-
     <style>
-
-        /* --- 2. High-Design CSS Styling --- */
-
-
+        /* --- High-Design CSS Styling --- */
 
         :root {
-
             --bg: #111317;
-
             --panel-bg: rgba(255, 255, 255, 0.05);
-
             --panel-border: rgba(255, 255, 255, 0.1);
-
             --text-primary: #ffffff;
-
             --text-secondary: #aaaaeb;
-
             --accent: #007bff;
-
             --accent-hover: #0056b3;
-
+            --highlight: #ffc107; /* New highlight color */
             --shadow: rgba(0, 0, 0, 0.2);
-
             --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
         }
-
-
 
         /* Base Setup */
-
         * {
-
             box-sizing: border-box;
-
         }
-
-
 
         body {
-
             font-family: var(--font-family);
-
             background-color: var(--bg);
-
             color: var(--text-primary);
-
             margin: 0;
-
             padding: 2rem;
-
             min-height: 100vh;
-
             overflow: hidden;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
         }
-
-
 
         /* Layout */
-
         main {
-
             display: grid;
-
             grid-template-columns: 380px 1fr;
-
             gap: 2rem;
-
             width: 100%;
-
             max-width: 1400px;
-
             height: 80vh;
-
             max-height: 800px;
-
         }
-
-
 
         /* Glassmorphism Panel Style */
-
         .panel {
-
             background: var(--panel-bg);
-
             border: 1px solid var(--panel-border);
-
             border-radius: 16px;
-
             backdrop-filter: blur(10px);
-
             -webkit-backdrop-filter: blur(10px);
-
             padding: 2rem;
-
             box-shadow: 0 8px 32px var(--shadow);
-
             overflow: hidden;
-
         }
-
-
 
         /* --- Controls Panel (Left) --- */
-
         .controls-panel {
-
             display: flex;
-
             flex-direction: column;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(20px);
-
         }
-
-
-
-        /* Title (for GSAP) */
 
         .title {
-
             font-weight: 900;
-
             font-size: 2.5rem;
-
             line-height: 1.1;
-
             margin: 0 0 0.5rem;
-
             color: var(--text-primary);
-
         }
-
-       
-
+        
         .title-line {
-
             display: block;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(100%);
-
         }
-
-       
-
-        /* Wrapped for animation */
-
+        
         .title-wrap {
-
-            overflow: hidden; /* Clips the text for the reveal */
-
+            overflow: hidden;
         }
-
-
 
         .subtitle {
-
             font-size: 1rem;
-
             font-weight: 400;
-
             color: var(--text-secondary);
-
             margin: 0 0 2rem;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(20px);
-
         }
-
-
 
         label {
-
             font-size: 0.875rem;
-
             font-weight: 600;
-
             color: var(--text-secondary);
-
             margin-bottom: 0.5rem;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
         }
-
-
 
         textarea {
-
             font-family: var(--font-family);
-
             font-size: 1rem;
-
             background: rgba(0, 0, 0, 0.2);
-
             border: 1px solid var(--panel-border);
-
             border-radius: 8px;
-
             color: var(--text-primary);
-
             padding: 0.75rem;
-
             height: 120px;
-
             resize: none;
-
             margin-bottom: 1rem;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(20px);
-
         }
-
-
 
         textarea:focus {
-
             outline: none;
-
             border-color: var(--accent);
-
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
-
         }
-
-
 
         button {
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
             gap: 0.5rem;
-
             font-family: var(--font-family);
-
             font-size: 1rem;
-
             font-weight: 600;
-
             background: var(--accent);
-
             color: var(--text-primary);
-
             border: none;
-
             border-radius: 8px;
-
             padding: 0.875rem;
-
             cursor: pointer;
-
             transition: all 0.2s ease-in-out;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(20px);
-
         }
-
-
 
         button:hover {
-
             background: var(--accent-hover);
-
-            transform: translateY(-2px); /* Micro-interaction */
-
+            transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-
         }
-
-
 
         button:active {
-
             transform: translateY(0);
-
         }
-
-       
-
+        
         /* Output Table */
-
         .table-container {
-
             flex-grow: 1;
-
             overflow-y: auto;
-
             margin-top: 1.5rem;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: translateY(20px);
-
         }
-
-
 
         #codes-table {
-
             width: 100%;
-
             border-collapse: collapse;
-
         }
-
-
 
         #codes-table th,
-
         #codes-table td {
-
             padding: 0.75rem;
-
             text-align: left;
-
             border-bottom: 1px solid var(--panel-border);
-
         }
-
-       
-
+        
         #codes-table th {
-
             font-size: 0.875rem;
-
             color: var(--text-secondary);
-
         }
-
-       
-
+        
         #codes-table td {
-
             font-family: monospace;
-
             font-size: 1rem;
-
             color: var(--text-primary);
-
         }
-
-       
-
+        
         #codes-table td:first-child {
-
             font-weight: 600;
-
         }
-
-
 
         /* --- Visualization Panel (Right) --- */
-
         .viz-panel {
-
             position: relative;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
-            /* GSAP: Set initial animation state */
-
-            opacity: 0;
-
+            opacity: 0; /* GSAP initial state */
             transform: scale(0.95);
-
         }
-
-
 
         #tree-svg {
-
             width: 100%;
-
             height: 100%;
-
         }
-
-
 
         #viz-placeholder {
-
             position: absolute;
-
             color: var(--text-secondary);
-
             font-weight: 600;
-
             text-align: center;
-
             transition: opacity 0.3s ease;
-
+            /* Will be hidden/shown by JS */
+        }
+        
+        /* --- Animation Status --- */
+        #viz-status {
+            position: absolute;
+            top: 1.5rem;
+            left: 2rem;
+            right: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 10;
+            pointer-events: none;
         }
 
-
-
-        /* --- D3.js Tree Styles (Dark Mode) --- */
-
+        /* --- D3.js Tree Styles --- */
+        /* IMPORTANT: We will control transform with GSAP, not CSS */
+        .node {
+            /* This group will be moved by GSAP */
+        }
+        
         .node circle {
-
             stroke: var(--accent);
-
             stroke-width: 3px;
-
+            transition: stroke 0.3s, transform 0.3s;
         }
-
-
 
         .node--internal circle {
-
             fill: var(--bg);
-
         }
-
-
 
         .node--leaf circle {
-
             fill: #334;
-
         }
-
-       
-
+        
         .node text {
-
             font-size: 14px;
-
             font-weight: 600;
-
             fill: var(--text-primary);
-
+            text-shadow: 0 0 5px var(--bg);
         }
-
-       
-
+        
         .node .char-label {
-
             fill: var(--accent);
-
             font-size: 16px;
-
             font-weight: 700;
-
         }
-
-
 
         .link {
-
             fill: none;
-
             stroke: var(--panel-border);
-
             stroke-width: 2px;
-
         }
-
-       
-
+        
         .link-label {
-
             font-size: 12px;
-
             font-weight: 700;
-
             fill: var(--text-secondary);
-
+            opacity: 0; /* Start invisible for animation */
         }
-
-
-
     </style>
-
 </head>
-
 <body>
 
-
-
     <main>
-
         <div class="panel controls-panel">
-
             <h1 class="title">
-
                 <span class="title-wrap"><span class="title-line">DAA PROJECT</span></span>
-
-                <span class="title-wrap"><span class="title-line">HUFFMAN CODING </span></span>
-
+                <span class="title-wrap"><span class="title-line">HUFFMAN CODING</span></span>
             </h1>
-
             <p class="subtitle"></p>
 
-
-
             <label for="text-input">Enter Your Text here</label>
-
-            <textarea id="text-input" placeholder="piyush"></textarea>
-
-           
-
+            <textarea id="text-input" placeholder="e.g., huffman coding"></textarea>
+            
             <button id="visualize-btn">
-
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13.01V2.99C2 2.44 2.45 2 3 2h10.01c.54 0 .99.45.99.99V13.01c0 .54-.45.99-.99.99H3c-.55 0-.99-.45-.99-.99Z"/><path d="M11 21.99h7.01c.54 0 .99-.45.99-.99V10.99c0-.54-.45-.99-.99-.99H11c-.55 0-.99.45-.99.99V21c0 .54.45.99.99.99Z"/><path d="M7 14v-2"/><path d="M17 11v-2"/></svg>
-
-                <span>Generate huffman tree</span>
-
+                <span>Generate Huffman Tree</span>
             </button>
 
-
-
             <div class="table-container">
-
                 <table id="codes-table">
-
                     <thead>
-
                         <tr>
-
                             <th>Character</th>
-
+                            <!-- ADDED THIS COLUMN -->
+                            <th>Count</th>
                             <th>Code</th>
-
                         </tr>
-
                     </thead>
-
                     <tbody>
-
-                        </tbody>
-
+                        <!-- Rows will be added by JS -->
+                    </tbody>
                 </table>
-
             </div>
-
         </div>
-
-
 
         <div class="panel viz-panel">
-
             <div id="viz-placeholder">
-
                 <p>Your visualization will appear here.</p>
-
             </div>
-
+            <!-- NEW: Status element -->
+            <div id="viz-status"></div>
             <svg id="tree-svg"></svg>
-
         </div>
-
     </main>
 
-
-
+    <!-- D3.js and GSAP Libraries -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-
+    <!-- ADDED TEXTPLUGIN FOR TYPING EFFECT -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
 
     <script>
-
-       
+        // REGISTER THE PLUGIN
+        gsap.registerPlugin(TextPlugin);
 
         // --- 1. Huffman Algorithm Logic ---
-
-       
-
-        // Node class for building the tree
+        
+        let nodeIdCounter = 0;
 
         class HuffmanNode {
-
             constructor(char, freq, left = null, right = null) {
-
+                this.id = nodeIdCounter++; 
                 this.char = char;
-
                 this.freq = freq;
-
                 this.left = left;
-
                 this.right = right;
-
             }
-
             isLeaf() {
-
                 return this.left === null && this.right === null;
-
             }
-
         }
-
-
-
-        // Main function to build the tree
 
         function buildHuffmanTree(text) {
-
+            nodeIdCounter = 0; 
             const freqMap = new Map();
-
             for (const char of text) {
-
                 freqMap.set(char, (freqMap.get(char) || 0) + 1);
-
             }
-
-
 
             const priorityQueue = [];
-
             for (const [char, freq] of freqMap.entries()) {
-
                 priorityQueue.push(new HuffmanNode(char, freq));
-
             }
 
-
+            const steps = [];
+            steps.push({ type: 'init', nodes: [...priorityQueue] });
 
             if (priorityQueue.length === 1) {
-
                 const leaf = priorityQueue[0];
-
                 const root = new HuffmanNode(null, leaf.freq, leaf, null);
-
-                return { root, codes: { [leaf.char]: '0' } };
-
+                steps.push({ type: 'merge', leftId: leaf.id, rightId: null, parentNode: root });
+                
+                const codes = { [leaf.char]: '0' };
+                return { root, codes, steps };
             }
-
-
 
             while (priorityQueue.length > 1) {
-
                 priorityQueue.sort((a, b) => a.freq - b.freq);
-
+                
                 const left = priorityQueue.shift();
-
                 const right = priorityQueue.shift();
-
+                
                 const parent = new HuffmanNode(null, left.freq + right.freq, left, right);
-
+                
+                steps.push({ type: 'merge', leftId: left.id, rightId: right.id, parentNode: parent });
+                
                 priorityQueue.push(parent);
-
             }
-
-
 
             const root = priorityQueue[0];
-
             const codes = {};
-
             generateCodes(root, "", codes);
-
-            return { root, codes };
-
+            // --- MODIFIED: Return freqMap as well ---
+            return { root, codes, steps, freqMap };
         }
-
-
-
-        // Recursive function to generate codes
 
         function generateCodes(node, currentCode, codes) {
-
             if (node === null) return;
-
             if (node.isLeaf()) {
-
-                codes[node.char] = currentCode || "0";
-
+                codes[node.char] = currentCode || "0"; 
             }
-
             generateCodes(node.left, currentCode + "0", codes);
-
             generateCodes(node.right, currentCode + "1", codes);
-
         }
 
-
-
-       
-
-        // --- 2. D3.js Visualization (with Animation) ---
-
-
+        
+        // --- 2. D3.js & GSAP Step-by-Step Animation (REVEAL LOGIC) ---
 
         const svg = d3.select("#tree-svg");
-
-        const width = svg.node().clientWidth;
-
-        const height = svg.node().clientHeight;
-
-        const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-
-       
-
-        // We create a 'g' element (group) to hold the tree,
-
-        // and apply margins.
-
+        const svgNode = svg.node();
+        const margin = { top: 70, right: 50, bottom: 50, left: 50 };
+        
         const g = svg.append("g")
-
             .attr("transform", `translate(${margin.left},${margin.top})`);
+        
+        const treeLayout = d3.tree();
+        
+        // Maps to track D3 data and DOM elements during animation
+        let drawnNodeMap = new Map();
 
-       
-
-        // Create the tree layout
-
-        const treeLayout = d3.tree().size([
-
-            width - margin.left - margin.right,
-
-            height - margin.top - margin.bottom
-
-        ]);
-
-
-
-        function drawTree(rootNode) {
-
-            // Clear previous tree
-
+        // Main animation function
+        function animateTree(rootNode, steps) {
+            // 1. Clear previous tree and state
             g.selectAll("*").remove();
-
-
-
+            drawnNodeMap.clear();
+            showVizPlaceholder(false);
+            
             if (!rootNode) return;
 
-           
-
-            // --- CHANGED ---
-
-            // This is the duration for each "step" of the build-up animation
-
-            const stepDuration = 800; // 800ms per level
-
-
-
-            // 1. Convert our HuffmanNode data into a D3-readable hierarchy
-
+            // 2. Calculate final layout
+            const width = svgNode.clientWidth - margin.left - margin.right;
+            const height = svgNode.clientHeight - margin.top - margin.bottom;
+            treeLayout.size([width, height]);
+            
             const hierarchy = d3.hierarchy(rootNode, d => {
-
                 const children = [];
-
                 if (d.left) children.push(d.left);
-
                 if (d.right) children.push(d.right);
-
                 return children.length > 0 ? children : null;
-
             });
-
-           
-
-            // --- CHANGED ---
-
-            // Get the max height (root's height) to calculate delays
-
-            // Leaves are height: 0, root is height: max
-
-            const maxHeight = hierarchy.height;
-
-
-
-            // 2. Calculate (x, y) position for each node
-
+            
             const treeData = treeLayout(hierarchy);
+            const allNodes = treeData.descendants();
+            const allLinksData = treeData.links();
+            const linkMap = new Map(); // To store drawn links
 
-
-
-            // 3. Draw the Links (lines)
-
-            const links = g.selectAll(".link")
-
-                .data(treeData.links())
-
-                .enter()
-
-                .append("g")
-
-                .attr("class", "link-group");
-
-               
-
-            // The path itself
-
-            const linkPath = links.append("path")
-
-                .attr("class", "link")
-
-                .attr("d", d3.linkVertical()
-
-                    .x(d => d.x)
-
-                    .y(d => d.y)
-
-                );
-
-
-
-            // --- Link Animation ---
-
-            // Get total length of each path
-
-            linkPath.each(function(d) { // --- CHANGED --- (Added `d` parameter)
-
-                const totalLength = this.getTotalLength();
-
-                d3.select(this)
-
-                    .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
-
-                    .attr("stroke-dashoffset", totalLength) // Start "invisible"
-
-                    .transition() // Start D3 transition
-
-                    // --- CHANGED ---
-
-                    // Delay animation based on the child's height (leaves are 0)
-
-                    .delay(d.target.height * stepDuration)
-
-                    .duration(1000)
-
-                    .ease(d3.easeCubicOut)
-
-                    .attr("stroke-dashoffset", 0); // Animate to "fully drawn"
-
+            // 3. Draw ALL nodes and links, but hidden
+            
+            // Draw all links first (so they are behind nodes)
+            allLinksData.forEach(linkData => {
+                const linkId = `link-${linkData.source.data.id}-${linkData.target.data.id}`;
+                const linkG = drawLink(linkData, linkId);
+                // Set initial state: invisible
+                gsap.set(linkG.node(), { opacity: 0 });
+                // Set path for "drawing" animation
+                const path = linkG.select('path').node();
+                const totalLength = path.getTotalLength();
+                gsap.set(path, { strokeDasharray: totalLength, strokeDashoffset: totalLength });
+                
+                linkMap.set(linkId, linkG);
             });
 
-           
+            // Draw all nodes
+            allNodes.forEach(d3Node => {
+                const nodeG = drawNode(d3Node);
+                // Set initial state: invisible, at final position, and small
+                gsap.set(nodeG.node(), { 
+                    x: d3Node.x, 
+                    y: d3Node.y, 
+                    opacity: 0, 
+                    scale: 0.5
+                });
+                drawnNodeMap.set(d3Node.data.id, nodeG);
+            });
+            
+            // 4. Create GSAP timeline to REVEAL the tree
+            const tl = gsap.timeline();
 
-            // Link labels ('0' or '1')
+            // --- Animation Step 0: Initial Nodes ---
+            const initStep = steps.shift();
+            tl.add(() => updateStatus("Initializing: Creating leaf nodes..."));
 
-            links.append("text")
+            const leafNodeElements = [];
+            initStep.nodes.forEach(leafData => {
+                const nodeG = drawnNodeMap.get(leafData.id);
+                if (nodeG) { 
+                    leafNodeElements.push(nodeG.node());
+                }
+            });
 
-                .attr("class", "link-label")
+            // Animate leaf nodes appearing
+            tl.to(leafNodeElements, {
+                opacity: 1,
+                scale: 1,
+                duration: 0.7,
+                ease: 'back.out(1.7)',
+                stagger: 0.1
+            });
+            tl.to({}, { duration: 1.5 }); // Pause
 
-                .attr("x", d => (d.source.x + d.target.x) / 2)
+            // --- Animation Step 1+: Merge Steps ---
+            steps.forEach(step => {
+                const { leftId, rightId, parentNode } = step;
 
-                .attr("y", d => (d.source.y + d.target.y) / 2)
+                // Find all elements for this merge
+                const leftEl = drawnNodeMap.get(leftId);
+                const parentG = drawnNodeMap.get(parentNode.id);
+                
+                if (rightId === null) {
+                    // --- Single-child merge ---
+                    const leftLabel = leftEl.node().__data__.data.isLeaf() ? `'${leftEl.node().__data__.data.char}'` : `Node (f: ${leftEl.node().__data__.data.freq})`;
+                    const linkData = allLinksData.find(l => l.source.data.id === parentNode.id && l.target.data.id === leftId);
+                    const linkG = linkMap.get(`link-${linkData.source.data.id}-${linkData.target.data.id}`);
 
-                .attr("dy", "-0.3em")
+                    tl.add(() => updateStatus(`Wrapping single node ${leftLabel}...`));
+                    
+                    // Highlight child
+                    tl.to(leftEl.select('circle').node(), { stroke: 'var(--highlight)', scale: 1.2, duration: 0.3 });
+                    
+                    // Animate parent and link appearing
+                    tl.to(parentG.node(), { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' });
+                    tl.to(linkG.node(), { opacity: 1 }, "<"); // Show group
+                    tl.to(linkG.select('path').node(), { strokeDashoffset: 0, duration: 0.5 }, "-=0.3");
+                    tl.to(linkG.select('text').node(), { opacity: 1, duration: 0.3 }, ">-0.2");
 
-                .attr("text-anchor", "middle")
+                    // Un-highlight child
+                    tl.to(leftEl.select('circle').node(), { stroke: 'var(--accent)', scale: 1.0, duration: 0.3 });
 
-                .text(d => d.target.data === d.source.data.left ? "0" : "1")
+                } else {
+                    // --- Standard two-child merge ---
+                    const rightEl = drawnNodeMap.get(rightId);
+                    
+                    const leftLabel = leftEl.node().__data__.data.isLeaf() ? `'${leftEl.node().__data__.data.char}'` : `Node (f: ${leftEl.node().__data__.data.freq})`;
+                    const rightLabel = rightEl.node().__data__.data.isLeaf() ? `'${rightEl.node().__data__.data.char}'` : `Node (f: ${rightEl.node().__data__.data.freq})`;
 
-                .attr("opacity", 0) // Start invisible
+                    const leftLinkData = allLinksData.find(l => l.source.data.id === parentNode.id && l.target.data.id === leftId);
+                    const rightLinkData = allLinksData.find(l => l.source.data.id === parentNode.id && l.target.data.id === rightId);
+                    const leftLinkG = linkMap.get(`link-${leftLinkData.source.data.id}-${leftLinkData.target.data.id}`);
+                    const rightLinkG = linkMap.get(`link-${rightLinkData.source.data.id}-${rightLinkData.target.data.id}`);
 
-                .transition()
+                    tl.add(() => updateStatus(`Merging ${leftLabel} and ${rightLabel}...`));
 
-                .duration(500)
+                    // Highlight children
+                    tl.to([leftEl.select('circle').node(), rightEl.select('circle').node()], { stroke: 'var(--highlight)', scale: 1.2, duration: 0.3, stagger: 0.1 });
+                    
+                    // Animate parent and links appearing
+                    tl.to(parentG.node(), { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' });
+                    tl.to([leftLinkG.node(), rightLinkG.node()], { opacity: 1 }, "<"); // Show groups
+                    tl.to([leftLinkG.select('path').node(), rightLinkG.select('path').node()], { strokeDashoffset: 0, duration: 0.5, stagger: 0.1 }, "-=0.3");
+                    tl.to([leftLinkG.select('text').node(), rightLinkG.select('text').node()], { opacity: 1, duration: 0.3, stagger: 0.1 }, ">-0.2");
+                    
+                    // Un-highlight children
+                    tl.to([leftEl.select('circle').node(), rightEl.select('circle').node()], { stroke: 'var(--accent)', scale: 1.0, duration: 0.3 });
+                }
+                
+                tl.to({}, { duration: 1.5 }); // Pause after each merge
+            });
 
-                // --- CHANGED ---
-
-                // Delay based on height, +500ms to appear *after* link draws
-
-                .delay(d => (d.target.height * stepDuration) + 500)
-
-                .attr("opacity", 1);
-
-
-
-
-
-            // 4. Draw the Nodes (circles and text)
-
-            const node = g.selectAll(".node")
-
-                .data(treeData.descendants())
-
-                .enter()
-
-                .append("g")
-
-                .attr("class", d => `node ${d.data.isLeaf() ? 'node--leaf' : 'node--internal'}`)
-
-                .attr("transform", d => `translate(${d.x},${d.y})`)
-
-                .attr("opacity", 0); // Start invisible for animation
-
-               
-
-            // Add circles
-
-            node.append("circle")
-
-                .attr("r", 18);
-
-
-
-            // Add text (frequency)
-
-            node.append("text")
-
-                .attr("dy", "0.35em")
-
-                .attr("text-anchor", "middle")
-
-                .text(d => d.data.freq);
-
-
-
-            // Add character label (only for leaf nodes)
-
-            node.filter(d => d.data.isLeaf())
-
-                .append("text")
-
-                .attr("class", "char-label")
-
-                .attr("dy", "-25px") // Position above the node
-
-                .attr("text-anchor", "middle")
-
-                .text(d => `'${d.data.char.replace(" ", "␣")}'`);
-
-               
-
-            // --- Node Animation ---
-
-            node.transition()
-
-                .duration(750)
-
-                // --- CHANGED ---
-
-                // Delay node appearance based on its height (leaves first)
-
-                .delay(d => d.height * stepDuration)
-
-                .ease(d3.easeCubicOut)
-
-                .attr("opacity", 1);
-
+            // --- Animation Step: Final ---
+            tl.add(() => updateStatus("Build Complete! This is the final Huffman Tree."));
+            tl.fromTo(g.node(), { filter: "none" }, {
+                filter: "drop-shadow(0 0 10px var(--accent))",
+                duration: 0.5,
+                yoyo: true,
+                repeat: 1
+            });
         }
 
+        // --- Helper to draw a single node (returns D3 selection) ---
+        function drawNode(d3Node) {
+            const nodeG = g.append("g")
+                .attr("class", `node ${d3Node.data.isLeaf() ? 'node--leaf' : 'node--internal'}`)
+                .attr("id", `node-${d3Node.data.id}`);
+                
+            // Associate D3 data with the DOM element for GSAP to read
+            nodeG.node().__data__ = d3Node; 
+
+            nodeG.append("circle").attr("r", 18);
+            
+            if (d3Node.data.isLeaf()) {
+                // LEAF NODE: Character inside
+                nodeG.append("text")
+                    .attr("class", "char-label")
+                    .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
+                    .text(d3Node.data.char.replace(" ", "␣"));
+
+                // --- BLOCK ADDED BACK (MODIFIED) ---
+                // This adds the frequency number *above* the node
+                nodeG.append("text")
+                    .attr("dy", "-25px") 
+                    .attr("text-anchor", "middle")
+                    .text(d3Node.data.freq); // <-- Now just shows the number
+                    
+            } else {
+                // INTERNAL NODE: Frequency inside
+                nodeG.append("text")
+                    .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
+                    .text(d3Node.data.freq);
+            }
+            
+            return nodeG;
+        }
+
+        // Helper to draw a link (returns D3 selection)
+        function drawLink(linkData, id) {
+            const linkG = g.insert("g", ".node") // Insert links *behind* nodes
+                .attr("class", "link-group")
+                .attr("id", id);
+                
+            linkG.append("path")
+                .attr("class", "link")
+                .attr("d", d3.linkVertical()
+                    .x(d => d.x)
+                    .y(d => d.y)
+                (linkData));
+
+            linkG.append("text")
+                .attr("class", "link-label")
+                .attr("x", (linkData.source.x + linkData.target.x) / 2)
+                .attr("y", (linkData.source.y + linkData.target.y) / 2)
+                .attr("dy", "-0.3em")
+                .attr("text-anchor", "middle")
+                .text(linkData.target.data === linkData.source.data.left ? "0" : "1");
+
+            return linkG;
+        }
 
 
         // --- 3. UI Helper Functions ---
-
-       
-
-        function updateTable(codes) {
-
+        
+        // --- COMPLETELY REWRITTEN FUNCTION ---
+        function updateTable(codes, freqMap) {
             const tableBody = d3.select("#codes-table tbody");
+            tableBody.selectAll("*").remove(); 
 
-            tableBody.selectAll("*").remove(); // Clear old rows
+            // Combine codes and frequencies
+            const tableData = Object.entries(codes)
+                .map(([char, code]) => ({
+                    char: char,
+                    code: code,
+                    freq: freqMap.get(char) || 0
+                }))
+                .sort((a, b) => b.freq - a.freq); // Sort by frequency (highest first)
 
+            const rows = tableBody.selectAll("tr")
+                .data(tableData)
+                .enter()
+                .append("tr");
+                
+            // Create the cells
+            rows.append("td").text(d => `'${d.char.replace(" ", "␣")}'`);
+            const countCells = rows.append("td").text(0); // Start at 0 for counter
+            const codeCells = rows.append("td").text(""); // Start empty for typing
 
-
-            const sortedCodes = Object.entries(codes).sort((a, b) => a[0].localeCompare(b[0]));
-
-
-
-            for (const [char, code] of sortedCodes) {
-
-                const row = tableBody.append("tr");
-
-                row.append("td").text(`'${char.replace(" ", "␣")}'`);
-
-                row.append("td").text(code);
-
-            }
-
+            // Animate them in with a timeline
+            const tl = gsap.timeline();
+            
+            rows.each(function(d, i) {
+                const row = this;
+                const countCell = countCells.nodes()[i];
+                const codeCell = codeCells.nodes()[i];
+                
+                // An object to animate the count
+                const counter = { val: 0 };
+                
+                // Stagger the start of each row's animation
+                const startTime = i * 0.1;
+                
+                // Animate row sliding in
+                tl.from(row, { 
+                    opacity: 0, 
+                    x: -20, 
+                    duration: 0.3, 
+                    ease: 'power2.out' 
+                }, startTime);
+                
+                // Animate count
+                tl.to(counter, {
+                    val: d.freq,
+                    duration: 0.5,
+                    ease: 'power1.out',
+                    onUpdate: () => {
+                        countCell.textContent = Math.round(counter.val);
+                    }
+                }, startTime + 0.1); // Start just after row fades in
+                
+                // Animate code (typing effect)
+                tl.to(codeCell, {
+                    text: d.code,
+                    duration: d.code.length * 0.1, // Duration based on code length
+                    ease: 'none'
+                }, startTime + 0.3);
+            });
         }
-
-
 
         function showVizPlaceholder(show, message) {
-
             const placeholder = d3.select("#viz-placeholder");
-
             if (show) {
-
-                placeholder.html(`<p>${message}</p>`);
-
-                placeholder.style("opacity", 1);
-
-                g.selectAll("*").remove(); // Clear the tree
-
+                placeholder.html(`<p>${message || 'Your visualization will appear here.'}</p>`)
+                    .style("display", "block")
+                    .style("opacity", 1);
+                g.selectAll("*").remove(); 
             } else {
-
-                placeholder.style("opacity", 0);
-
+                placeholder.style("opacity", 0)
+                    .transition().delay(300)
+                    .style("display", "none");
             }
-
         }
-
-
+        
+        function updateStatus(message) {
+            const statusEl = d3.select("#viz-status");
+            statusEl.html(message)
+                .style("opacity", 0)
+                .transition()
+                .duration(300)
+                .style("opacity", 1);
+        }
 
         // --- 4. Event Listeners & Main Logic ---
 
-
-
         document.getElementById("visualize-btn").addEventListener("click", handleVisualize);
 
-
+        let mainTimeline = null;
 
         function handleVisualize() {
-
-            const text = document.getElementById("text-input").value;
-
-            if (!text) {
-
-                // Use a non-blocking message instead of alert()
-
-                showVizPlaceholder(true, "<span style='color: #ff6b6b;'>Please enter some text.</span>");
-
-                updateTable({}); // Clear table
-
-                return;
-
+            if (mainTimeline) {
+                mainTimeline.kill();
+                updateStatus(""); 
             }
 
+            const text = document.getElementById("text-input").value;
+            if (!text) {
+                showVizPlaceholder(true, "<span style='color: #ff6b6b;'>Please enter some text.</span>");
+                updateTable({}); 
+                return;
+            }
 
-
-            showVizPlaceholder(false); // Hide placeholder
-
-           
-
-            // 1. Build the tree and get codes
-
-            const { root, codes } = buildHuffmanTree(text);
-
-           
-
-            // 2. Draw the animated tree using D3
-
-            drawTree(root);
-
-           
-
-            // 3. Update the codes table
-
-            updateTable(codes);
-
+            showVizPlaceholder(false);
+            
+            // --- MODIFIED: Get freqMap ---
+            const { root, codes, steps, freqMap } = buildHuffmanTree(text);
+            
+            mainTimeline = animateTree(root, steps);
+            
+            // --- MODIFIED: Pass freqMap ---
+            updateTable(codes, freqMap);
         }
-
-       
-
+        
         // --- 5. GSAP Intro Animation ---
-
-       
-
+        
         document.addEventListener("DOMContentLoaded", () => {
-
-            // A "timeline" for sequential animations
-
             const tl = gsap.timeline();
-
-           
-
-            // Animate in panels
-
-            tl.to(".controls-panel", {
-
-                opacity: 1,
-
-                y: 0,
-
-                duration: 1,
-
-                ease: "power3.out"
-
-            })
-
-            .to(".viz-panel", {
-
-                opacity: 1,
-
-                scale: 1,
-
-                duration: 1,
-
-                ease: "power3.out"
-
-            }, "-=0.8"); // Start 0.8s before the previous one ends
-
-           
-
-            // Animate in controls
-
-            tl.to(".title-line", {
-
-                opacity: 1,
-
-                y: 0,
-
-                duration: 0.8,
-
-                stagger: 0.15, // Animate lines one after another
-
-                ease: "power4.out"
-
-            }, "-=0.5")
-
-            .to(".subtitle", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.5")
-
-            .to("label", { opacity: 1, duration: 0.5 }, "-=0.2")
-
-            .to("textarea", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-
-            .to("button", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-
-            .to(".table-container", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4");
-
-           
-
-            // Also run a default visualization
-
-            handleVisualize();
-
+            
+            tl.to(".controls-panel", { opacity: 1, y: 0, duration: 1, ease: "power3.out" })
+              .to(".viz-panel", { opacity: 1, scale: 1, duration: 1, ease: "power3.out" }, "-=0.8");
+            
+            tl.to(".title-line", { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power4.out" }, "-=0.5")
+              .to(".subtitle", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, "-=0.5")
+              .to("label", { opacity: 1, duration: 0.5 }, "-=0.2")
+              .to("textarea", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
+              .to("button", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
+              .to(".table-container", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4");
+            
+            // --- MODIFIED: Start with an empty placeholder ---
+            showVizPlaceholder(true, "Enter text above and click 'Generate' to see the visualization.");
         });
 
-
-
     </script>
-
 </body>
-
 </html>
-
